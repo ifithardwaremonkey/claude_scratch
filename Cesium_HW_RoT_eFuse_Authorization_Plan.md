@@ -8,9 +8,11 @@
 | Current build | VKC1_20260909 (software root of trust, fingerprint `:user/dev-keys`) |
 | MP-intent build | VKC1_20260919 (expected 19 Sep 2026) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
-| Revision | 1.0 draft, 12 September 2026 |
+| Revision | 1.1 draft, 12 September 2026 (1.0 issued earlier the same day) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
-| Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted) |
+| Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.1.** Source E (software root of trust report) ingested. Section 2 rewritten as a three-way comparison (unsigned, software RoT, hardware RoT). The corrupt-preloader brick mode is now classified as **new with fusing**, because under software RoT the BootROM does not verify the preloader and still offers download mode. Case A0 is sharpened to read the preloader security flag and `sboot_state`. A key-freeze rule is added: any key rotation must complete before the first unit ships under either option, because the preloader is outside OTA scope. Three new source conflicts (7 to 9) and two new missing assumptions (19, 20).
 
 ---
 
@@ -18,13 +20,14 @@
 
 **1. Field fusing is ruled out.** The feasibility study is adopted in full: eFuse writes on MT8371 are only possible from BROM/DA mode or a preloader self-blow, and self-blow via OTA on a battery-less unit with no hold-up supply is a brick-rate machine. Every Cesium unit is therefore either fused on the production line or never fused. There is no "ship open, close later" path. That makes the per-unit fuse decision permanent in both directions.
 
-**2. Hardware root of trust does not materially raise the probability that a bad OTA bricks a tablet. It changes what happens after a mistake.** The question in the brief is answered in Section 2. On the A/B path (everything `update_engine` writes) a corrupt or truncated payload is rejected before any write regardless of fuse state, and slot fallback is fuse-independent. The fuse adds exposure in three narrower places, none of which a 30-day soak measures well:
+**2. Hardware root of trust does not raise the probability that a bad OTA is applied. It changes what can be recovered afterwards, and it adds exactly one new brick mode.** The question in the brief is answered in Section 2. On the A/B path (everything `update_engine` writes) a corrupt or truncated payload is rejected before any write regardless of fuse state, and slot fallback is fuse-independent. If the 0909 preloader is built with `ATTR_SBOOT_ENABLE` (to be confirmed by A0), the software root of trust already enforces LK, TEE and AVB signatures, so a mis-signed image already halts boot today. The fuse adds exposure in four places, none of which a 30-day soak measures well:
 
+- **The preloader itself becomes verified.** Under software RoT the BootROM does not check the preloader; a corrupt preloader drops to BROM download mode and is re-flashed with no authorization. Under hardware RoT the BootROM halts on a hash mismatch, which is what the bricked first article shows (no USB enumeration). This is the one failure mode that is genuinely new with fusing, and E1 plus E5 exist to close it.
 - **Key and fuse-image mistakes** become permanent and batch-scale (wrong hash, dev key, leaked key).
-- **Every recovery path narrows** to signed artefacts: signed DA, re-signed firmware, older rescue images rejected.
-- **A signature failure becomes fatal for that slot** instead of a warning, so A/B fallback must be proven on a fused unit, not assumed from open-unit behaviour.
+- **Every recovery path narrows** to signed artefacts: signed DA, re-signed firmware, older rescue images rejected. Leaving DAA unblown (G7, G11) keeps this narrower than Source E's worst case.
+- **Keys are frozen for the life of the fleet.** Source E's software-RoT brick mode is a key rotation that updates LK but not the preloader. Since the preloader is excluded from OTA (E1), rotation is impossible after shipment in **both** configurations. Any rotation must happen before lot 1 ships.
 
-Those three are controlled by gates, custody and rehearsal before the first unit is fused, not by field time. This is good news for the schedule: the risks that actually differ between open and closed are front-loadable.
+Those four are controlled by gates, custody and rehearsal before the first unit is fused, not by field time. This is good news for the schedule: the risks that actually differ between open and closed are front-loadable.
 
 **3. The full r0.4 gate set cannot complete in three weeks.** The 30-day fused pilot soak (Group K) alone overruns MP. Two authorization options are defined in Section 3. The recommended posture:
 
@@ -35,7 +38,7 @@ Those three are controlled by gates, custody and rehearsal before the first unit
 
 1. Revive bricked unit J26080143-0A00076 via forced BROM download (E5). If this cannot be shown, closed configuration is not accepted at all.
 2. Resolve the `dev-keys` fingerprint versus ICON certificates (G1, G2) on 0909 now and again on 0919.
-3. Key custody (G3, G5): AVB private keys (`img_prvk.pem`, `da_prvk.pem`, `root_prvk.pem`) were posted as Basecamp attachments to a 19-person distribution including ODM client accounts. Keys distributed that way cannot be considered in custody. Decide within 48 hours whether to rotate to an ICON-held key and regenerate `efuse_iFitG520.img` before any MP unit is fused. Rotation costs roughly 3 to 5 days of re-signing and re-test; not rotating means the fleet permanently trusts a key at least 19 people have handled.
+3. Key custody (G3, G5): AVB private keys (`img_prvk.pem`, `da_prvk.pem`, `root_prvk.pem`) were posted as Basecamp attachments to a 19-person distribution including ODM client accounts. Keys distributed that way cannot be considered in custody. Decide within 48 hours whether to rotate to an ICON-held key and regenerate `efuse_iFitG520.img` before any MP unit is fused. Rotation costs roughly 3 to 5 days of re-signing and re-test; not rotating means the fleet permanently trusts a key at least 19 people have handled. Whatever is decided, rotation must complete before the first unit ships under either option, because the preloader carries the root key (software RoT) or is verified against it (hardware RoT) and is outside OTA scope.
 4. Written CVTE confirmation of exactly which partitions the OTA payload writes and that preloader/boot0 are never in scope (E1).
 
 ---
@@ -48,6 +51,7 @@ Those three are controlled by gates, custody and rehearsal before the first unit
 | **B. Cesium Closed-Config Field Brick-Resistance Test Plan r0.4** (two years of Basecamp record with CVTE and Malata) | Program history, 19-item risk register, groups A–N with STOP-SHIP and GATE badges, sample matrix, exit criteria, 16 open questions for the ODMs and MediaTek. | Trusted and platform-specific. Not yet issued to the ODMs. This document carries its case IDs forward unchanged so the two can be read side by side. |
 | **C. Remote eFuse Programming MT8371 Feasibility Study** | Fuse programming modes; self-blow pipeline; field failure modes (3.7 V threshold, hash mismatch, magic-key mismatch, unreadable failure log). Verdict: not feasible for field deployment. | Trusted. Its conclusion is adopted; its "enable anti-rollback for field counters" recommendation is **not** adopted (see conflict 1). |
 | **D. Cesium 0831 Boot Log Analysis** (this repository) | Corroborating evidence: `keystore2 ROLLBACK_RESISTANCE_UNAVAILABLE`; no reliable RTC, wall clock set to build time each cold boot. | Supporting only. |
+| **E. MediaTek Security 2.1 Software Root of Trust Report** (MediaTek Secure Boot Developer Guide V1.1, Secure 2.1 Configuration SOP, eFuse Writer Guide) | Definition of software RoT: preloader built with `MTK_SEC_BOOT = ATTR_SBOOT_ENABLE` enforces CERT1/CERT2 verification of LK, TEE and AVB descriptors with the root public key compiled into the preloader (`sw_root_pubk.h`); BootROM does not verify the preloader while `SBC_EN = 0`. Contrast flag `ATTR_SBOOT_ONLY_ENABLE_ON_SCHIP` enforces only once fused. Three-way comparison of unsigned, software RoT and hardware RoT; recovery paths for each; recommendation of software RoT for 100 to 500 unit field trials. | Trusted for mechanism and configuration flags. Its bricking-probability percentages are conditional estimates without a cited measurement and are reinterpreted in conflict 7. The document is machine-generated from the cited MediaTek guides, so quotations should be checked against the guides before being put in front of the ODMs. |
 
 ### 1.1 Conflicts between trusted sources and how this plan resolves them
 
@@ -59,6 +63,9 @@ Those three are controlled by gates, custody and rehearsal before the first unit
 | 4 | **Battery threshold.** Source C's 3.7 V cut-off applies to self-blow on battery. Cesium has no battery. | Irrelevant to field OTA (no self-blow ships). Relevant to the factory station: the burn depends entirely on the 12 V bench supply and the manual power sequence, so station power conditioning and interruption behaviour are tested (L2, I4). |
 | 5 | **Non-A/B boot chain.** Source A treats non-A/B as deprecated and out of scope. Source B records that the one demonstrated brick on this program was a non-A/B boot stage (corrupt `preloader_a`, intact `preloader_b` did not fail over, no USB enumeration). | Group E is the highest-value group in this plan. E5 is the single stop-ship. |
 | 6 | **Iteration counts.** Source A requires 1,000 consecutive passing iterations. Source B requires zero unrecoverable units over a 200-cycle randomised soak. | 1,000 iterations on **open** units (cheap, automated, no scrap). 200 randomised interruptions on **fused** units, bounded by sacrificial hardware, with zero unrecoverable as the binding criterion. |
+| 7 | **Bricking probability figures.** Source E estimates OTA bricking at 5 to 12 percent for software RoT and 25 to 40 percent for hardware RoT "if mismatched". Read as per-OTA rates these would make any OTA plan unshippable and would contradict Sources A and B. | Read them as **P(brick given a key or hash mismatch has already been shipped)**, which is what the wording says. The mismatch event is exactly what G1 to G6 and J1 prevent from ever leaving the build pipeline. The figures therefore quantify the cost of a gate failure, not the field rate of a gated fleet. They are not used as inputs to Section 6.3 until a measured source is found. |
+| 8 | **DAA state.** Source E's hardware-RoT recovery case assumes both `SBC_EN` and `DAA_EN` are blown, so BROM refuses every unsigned Download Agent and recovery needs a signed `da.auth` or a MediaTek RMA certificate. Source B's plan blows SBC only and the SOP trace shows DA authentication disabled. | Cesium recovery is less constrained than Source E's worst case **as long as G7 and G11 hold** (only SBC set, DAA decision recorded, never blown in the same pass). Source E is the description of what Cesium becomes if DAA is ever blown without a demonstrated recovery path, which is why G11 is STOP-SHIP. |
+| 9 | **What "software root of trust" enforces on 0909.** Source E: enforcement depends on the preloader build flag. `ATTR_SBOOT_ENABLE` verifies LK, TEE and AVB regardless of fuse state; `ATTR_SBOOT_ONLY_ENABLE_ON_SCHIP` verifies nothing until fused. Source B records both "mismatches are ignored" (Feb 2024) and "software AVB verifies bootloader/Android binding" (May 2026), which are consistent with different flags at different times. | A0 reads the flag from the 0909 and 0919 preloader configuration and `sboot_state` from the console, then confirms behaviourally with a wrong-key LK. If 0909 is `ONLY_ENABLE_ON_SCHIP`, the open lot 1 under Option A ships with **no** boot-chain signature enforcement and the plan must require `ATTR_SBOOT_ENABLE` for open units (new gate A0-b). If it is `ATTR_SBOOT_ENABLE`, the brief's premise is correct and Section 2 stands as written. |
 
 ---
 
@@ -66,23 +73,40 @@ Those three are controlled by gates, custody and rehearsal before the first unit
 
 The brief's hypothesis: the 0909 build already enforces a software root of trust, so a corrupt signature already risks a non-booting unit, and the hardware root of trust may add no brick risk at all.
 
-The hypothesis is **correct for the A/B update path and incorrect for recovery and key handling**. The premise also needs one correction: on the current open configuration the Basecamp record says AVB "runs open/unlocked, signature mismatches are ignored" (Feb 2024) and that the public key "can be replaced directly" (May 2026). On 0909 a wrong signature is very likely tolerated, not fatal. That must be measured on Day 1 (new case A0 below) because it determines how much behaviour actually changes at fusing.
+With Source E in hand the hypothesis is **correct for the A/B update path and for everything the preloader verifies, provided 0909 is built with `ATTR_SBOOT_ENABLE`. It is incorrect for the preloader itself, for recovery, and for key handling.** The Basecamp record contains both "signature mismatches are ignored" (Feb 2024) and "software AVB verifies bootloader/Android binding" (May 2026). Source E shows these describe two different preloader build flags, so which one 0909 carries must be read on Day 1 (A0), not inferred.
 
-| Failure mode | Open config (software RoT, today) | Closed config (SBC fused) | Marginal risk from fusing |
+### 2.1 Three configurations (from Source E, applied to Cesium)
+
+| Dimension | Unsigned boot (`ATTR_SBOOT_DISABLE`) | Software RoT (`ATTR_SBOOT_ENABLE`, `SBC_EN = 0`) | Hardware RoT (`ONLY_ENABLE_ON_SCHIP`, `SBC_EN = 1`) |
+|---|---|---|---|
+| Root key anchor | None | Public key compiled into preloader (`sw_root_pubk.h`) | Hash of public key in OTP (`SBC_PUBK_HASH`) |
+| Who verifies the preloader | Nobody | **Nobody.** BootROM loads it unchecked | BootROM, in silicon |
+| Who verifies LK, TEE, AVB descriptors | Nobody | Preloader software, enforcing (`sboot_state = 0x1`) | Preloader, whose own integrity is now guaranteed |
+| Behaviour on LK/TEE signature mismatch | Boots | Halts at preloader assertion | Halts at preloader assertion |
+| Behaviour on preloader corruption or mismatch | BROM download mode | BROM download mode; re-flash preloader, no auth file | **BROM halts.** No enumeration observed on Cesium. Forced-download entry (E5) is the only path |
+| USB flashing protection | Any DA | Any DA unless `ATTR_SUSBDL_ENABLE`; SOP trace shows DA auth disabled on Cesium | Signed DA if DAA blown; Cesium leaves DAA unblown (G7) |
+| Key rotation | Re-flash | Re-flash preloader (not possible by OTA on Cesium, E1) | Impossible |
+| Reversibility | Full | Full, by re-flash | None |
+| Source E's recommendation | Bring-up only | 100 to 500 unit field trials | Production shipping mode |
+
+### 2.2 Failure modes, open versus closed
+
+| Failure mode | Software RoT (open, if `ATTR_SBOOT_ENABLE`) | Hardware RoT (SBC fused) | Marginal risk from fusing |
 |---|---|---|---|
 | Corrupt, truncated or bit-flipped OTA payload (C1, C2) | Rejected by `update_engine` hash check before any write | Same | **None.** Fuse is not consulted. |
 | Delta against wrong source build (C12) | Rejected before write | Same | **None.** |
-| Package signed with wrong or test key (C3, C4) | Likely accepted at boot; unit runs foreign code | Slot fails AVB at boot; falls back to previous slot within retry budget | **Low, if fallback works on a fused unit.** Never measured (C5–C10). Security improves. |
-| Corrupt `vbmeta`, `boot.img`, hash tree in the inactive slot (C5–C7) | Likely boots with warning or ignored | Fallback to good slot | **Low, conditional on C5–C10 and M5.** |
-| Power loss during download, write, post-install, slot switch, first boot (D1–D9, PWR-01..04) | A/B protects; boots good slot | A/B protects; boots good slot | **None on the A/B mechanism itself.** Slot-metadata behaviour (M6–M8) must be verified once; it is fuse-independent. |
+| Package signed with wrong or test key (C3, C4) | Slot fails preloader/AVB check at boot; falls back to previous slot | Same | **None on the mechanism, if fallback works on a fused unit** (C5–C10). If 0909 is `ONLY_ENABLE_ON_SCHIP`, the open unit boots foreign code instead and security, not brick risk, is what changes. |
+| Corrupt `vbmeta`, `boot.img`, hash tree in the inactive slot (C5–C7) | Fallback to good slot | Fallback to good slot | **None, conditional on C5–C10 and M5.** |
+| Power loss during download, write, post-install, slot switch, first boot (D1–D9, PWR-01..04) | A/B protects; boots good slot | Same | **None on the A/B mechanism.** Slot-metadata behaviour (M6–M8) must be verified once; it is fuse-independent. |
 | Panic before boot-success marker (C8) | Auto revert | Auto revert | **None.** |
-| Corrupt non-A/B stage: preloader / boot0 (E2–E4) | No boot; BROM download mode accepts any image | No boot; observed: no USB enumeration; recovery requires forced BROM entry plus signed DA and signed image | **High until E5 passes.** The only demonstrated brick on the program is this mode. Mitigation is contractual: OTA never writes preloader/boot0 (E1). |
-| Wrong key hash, dev key, or leaked private key burned (R2, R3) | N/A: keys replaceable | Permanent, fleet-wide, no rotation | **Critical and new.** Only gates prevent it (G1–G6). |
-| Depot re-flash of a failed unit (H1) | Any image, any DA | Signed DA and re-signed image only; earlier rescue images rejected; per-site custody of signed DA | **Medium: cost and process, not probability.** Turns a 10-minute flash into a controlled artefact chain at every service site. |
-| Storage bit rot in active slot (C11) | Possibly silent execution of corrupt data | Verity detects, fallback or recovery | Security improves; brick risk unchanged if M5 passes. |
-| Factory fuse write itself (L1–L8, I1–I5) | N/A | Manual, ordered, irreversible; mis-sequence leaves unit fused-without-firmware or unfused-but-passed | **Medium, line-side only.** 100-unit CVTE trial with zero failures is encouraging, not sufficient. Malata has no fuse experience at all. |
+| Corrupt non-A/B stage: preloader / boot0 (E2–E4) | Soft brick: BROM download mode, re-flash with any DA and any preloader | **Hard brick unless forced download works.** BootROM halts on hash mismatch; observed on J26080143-0A00076 | **High until E5 passes. This is the one new brick mode.** Mitigation is contractual: OTA never writes preloader/boot0 (E1). |
+| Key rotation that updates LK but not preloader (Source E 5.2) | Halts at preloader; recoverable by USB re-flash of preloader | Halts; recoverable only with signed artefacts; hash cannot change | **Both fatal in the field** because the preloader is outside OTA scope. Rule: keys are frozen before lot 1 ships. |
+| Wrong key hash, dev key, or leaked private key burned (R2, R3) | N/A: re-flash preloader with new key | Permanent, fleet-wide | **Critical and new.** Only gates prevent it (G1–G6). |
+| Depot re-flash of a failed unit (H1) | Any image, any DA | Signed DA and re-signed image; earlier rescue images rejected | **Medium: cost and process, not probability.** Less severe than Source E's case because DAA stays unblown. |
+| Storage bit rot in active slot (C11) | Verity detects (AVB enforced by preloader) | Same | **None if M5 passes.** |
+| Factory fuse write itself (L1–L8, I1–I5) | N/A | Manual, ordered, irreversible | **Medium, line-side only.** 100-unit CVTE trial with zero failures is encouraging, not sufficient. Malata has no fuse experience at all. |
 
-**Conclusion.** Fusing does not raise the probability that a field OTA fails. It removes the ability to recover from process mistakes with an unsigned image, and it makes any key error permanent. The financial exposure therefore moves from "unforeseen OTA bug" (bounded by staged rollout regardless of fuse state) to "key, image or recovery-procedure error made before MP" (bounded only by the gates in Section 4). The plan is organised around that.
+**Conclusion.** If 0909 enforces software RoT, fusing changes nothing about how an OTA is verified or how a slot falls back. It adds one brick mode (preloader), removes every unsigned recovery route, and makes key errors permanent. The financial exposure therefore moves from "unforeseen OTA bug" (bounded by staged rollout regardless of fuse state) to "preloader integrity, key custody, and recovery procedure" (bounded only by E1, E5 and the Group G gates). Source E's own recommendation, software RoT for field trials of 100 to 500 units and hardware RoT for shipping, is the same posture as Option A.
 
 ---
 
@@ -148,7 +172,9 @@ Gate identifiers are from Plan B (r0.4). **STOP-SHIP** halts the closed-configur
 | N1, N2, N10 | GATE Prerequisites | Boot-control HAL and snapshot suites conform; fused userdebug build signed with release keys is available so fused-vs-open comparison is executable | CVTE, test lead |
 | N3 | STOP-SHIP Attestation | Key attestation on a fused, locked, release-signed unit reports verified and locked against the burned hash | Test lead |
 | N11 | STOP-SHIP GSI window | Written confirmation nobody downstream relies on generic-system-image evidence, which ends permanently at fusing | ICON |
-| **A0 (new)** | Baseline | On an open 0909 unit, apply wrong-key `vbmeta` and wrong-key OTA; record whether it boots, warns or refuses. Establishes how much behaviour changes at fusing | Test lead |
+| **A0 (new)** | Baseline | Read `MTK_SEC_BOOT` and `MTK_SEC_USBDL` from the 0909 and 0919 preloader project configuration and `sboot_state` from the preloader console. Then on an open 0909 unit flash a wrong-key LK and a wrong-key `vbmeta`; record halt, warning or boot. Result settles Section 1.1 conflict 9 | CVTE (config), test lead (behaviour) |
+| **A0-b (new)** | STOP-SHIP for open units under Option A | Any unit shipped unfused must carry a preloader built with `ATTR_SBOOT_ENABLE`, verified by A0 on the shipping build. An unfused unit built with `ONLY_ENABLE_ON_SCHIP` has no boot-chain signature enforcement at all | CVTE, ICON |
+| **K0 (new)** | STOP-SHIP Key freeze | Root, image and DA keys are frozen before the first unit ships under either option. Rotation after shipment requires a preloader update, which E1 excludes from OTA. Recorded as a signed decision alongside G3 | ICON |
 
 ### Tier 1. CVTE production-line authorization
 
@@ -220,7 +246,9 @@ Test content is Plan B groups A–N with Plan A's glitch matrix mapped in. Only 
 
 | ID | Change | Reason |
 |---|---|---|
-| A0 (new) | Open-config signature behaviour baseline (wrong-key `vbmeta`, wrong-key OTA, stripped signature) on 0909 | Establishes the true delta between open and closed; tests the brief's premise |
+| A0 (new) | Read preloader security flags and `sboot_state`; wrong-key LK and wrong-key `vbmeta` on an open 0909 unit | Source E shows enforcement depends on the build flag. Settles whether the brief's premise holds and whether open lot 1 units under Option A enforce anything |
+| A0-b, K0 (new) | Open units must be `ATTR_SBOOT_ENABLE`; keys frozen before first shipment | Source E section 5.2 brick mode (LK re-keyed without preloader) is unrecoverable by OTA on Cesium in either configuration |
+| E2, E3 | Add the open-unit control: corrupt `preloader_a` on an OPEN unit and record whether BROM download mode enumerates | Source E predicts a soft brick on open units and a halt on fused units. Confirming the open case proves the preloader mode is new with fusing rather than pre-existing |
 | A7 (new) | OTA client behaviour with the wall clock at build time (no RTC): TLS validation of the OTA endpoint, package timestamp checks, before NTP sync | Source D shows every cold boot starts at build time. An OTA that fails or a certificate rejected as not-yet-valid is a field-visible failure mode independent of fusing but exposed by any OTA plan |
 | N6 emphasis | Health HAL on a battery-less unit reports a sane state; `update_engine` minimum-battery policy verified | Tool reports `battery_voltage 0`; an update client that refuses to start, or starts when it should not, is plausible |
 | D8 | Brown-out via programmable DC source sweep, not only clean cut | A sagging console supply is more likely than an instant drop |
@@ -303,6 +331,8 @@ These are needed either to run the plan or to make the Option A / B decision. No
 16. Whether a US service site exists today with Windows hosts, the pinned SP Flash Tool version and a custody path for the signed DA.
 17. How the backend, depot and RMA will handle a mixed fused and unfused fleet if Option A is chosen, and how an OTA freeze by fuse state would be implemented if Option B is chosen.
 18. Malata's readiness: the 100-unit trial on 30 July was a CVTE run. Malata has not fused a unit on this program.
+19. Which preloader security flag the 0909 and 0919 builds carry (`ATTR_SBOOT_ENABLE` versus `ATTR_SBOOT_ONLY_ENABLE_ON_SCHIP`), and whether `MTK_SEC_USBDL` is set. Everything the brief assumes about "software root of trust already enforcing signatures" rests on this one makefile line, and the Basecamp record is consistent with either answer at different dates.
+20. Whether the ICON platform keys that sign the Android OTA (the `dev-keys` question) and the MediaTek boot-chain keys (`root_prvk.pem`, `img_prvk.pem`, `da_prvk.pem`) are managed as one custody problem or two. Source E describes six distinct keys across the chain; G3 must name a holder for each, and K0 freezes all of them.
 
 ---
 
@@ -324,5 +354,6 @@ Plan B section 7 questions 1–16 are carried forward unchanged and should be se
 | Section 1.1 conflicts 1, 2, 3, 6; glitch matrix IDs; kernel and build flag table; CTS/VTS modules | A/B Resiliency Test Plan v2.0 sections 3–6 |
 | Program history, risk register R1–R19, groups A–N, sample matrix, exit criteria, open questions 1–16 | Closed-Config Brick-Resistance Test Plan r0.4 sections 2–7 |
 | No RTC, rollback resistance unavailable | Cesium 0831 Boot Log Analysis, items 1 and 6 |
+| Section 2.1 three-way table; preloader unverified under software RoT; `ATTR_SBOOT_ENABLE` versus `ONLY_ENABLE_ON_SCHIP`; key-rotation brick mode; DAA recovery constraint; conflicts 7 to 9; cases A0, A0-b, K0; assumptions 19 and 20 | Software Root of Trust Report sections 1.1, 3, 4, 5.1 to 5.3 |
 
 *Prepared for internal ICON review. Contains no verbatim reproduction of vendor documentation. Not yet issued to CVTE or Malata.*
