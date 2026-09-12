@@ -8,9 +8,12 @@
 | Current build | VKC1_20260909 (software root of trust, fingerprint `:user/dev-keys`) |
 | MP-intent build | VKC1_20260919 (expected 19 Sep 2026) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
-| Revision | 1.2 draft, 12 September 2026 (1.0 and 1.1 issued earlier the same day) |
+| Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
+| Revision | 1.3 draft, 12 September 2026 (1.0 to 1.2 issued earlier the same day) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.3.** Program decision recorded: CVTE has already fused 100 units, and the intended posture is to field those serials as a tracked cohort while the remainder of mass production ships unfused until sufficient data exists. This is Option A with an existing cohort. Option B is withdrawn. New Section 3.3 defines the cohort protocol: release preconditions (fuse-map read-back, fingerprint and key checks, forced-download demonstration on a healthy fused unit), the data the cohort must generate (OTA transitions, not calendar time), the unfused control group, and the exit criteria that authorize fused production at CVTE and then Malata. Sacrificial and golden fused test units are now drawn from the 100. The key-rotation decision is flagged as fleet-splitting. Assumptions 23 to 25 added.
 
 **Changes in revision 1.2.** Source F, the MediaTek MT8391/MT8371 Android 15 Secure Boot Developer Guide V1.1, ingested and used to verify Source E. Flag names, the CERT1/CERT2 chain and the DAA flow in Source E are confirmed verbatim. Two facts from the guide change the plan. First, BROM fallback to the second preloader copy is documented **for NAND only**; Cesium boots from eMMC, which is the likely reason `preloader_b` did not take over on the bricked first article, so E2 is rescoped from a pass/fail to a characterisation and R1's mitigation rests on E1 and E5 alone. Second, the eFuse configuration file carries a `Disable_Rom_Cmd` option that MediaTek "highly recommends" and that permanently disables BROM command mode; if it is set in `efuse_iFitG520.img`, forced download (E5) is impossible on every fused unit, which would also explain the no-enumeration brick. G7 now reads back that bit explicitly and a new Day 1 action inspects the fuse XML.
 
@@ -31,10 +34,13 @@
 
 Those four are controlled by gates, custody and rehearsal before the first unit is fused, not by field time. This is good news for the schedule: the risks that actually differ between open and closed are front-loadable.
 
-**3. The full r0.4 gate set cannot complete in three weeks.** The 30-day fused pilot soak (Group K) alone overruns MP. Two authorization options are defined in Section 3. The recommended posture:
+**3. Program posture (decided): the 100 units CVTE has already fused are the field cohort; the remainder of mass production ships on software root of trust until the cohort has produced sufficient data.** This is Option A in Section 3.1 with a cohort that already exists, and it matches Source E's own recommendation for 100 to 500 unit field trials. Option B is withdrawn. Section 3.3 turns "track those serials for a period of time" into a protocol, because calendar time on its own measures nothing about OTA brick risk. The cohort must:
 
-- **Plan to Option A**: MP lot 1 ships on software root of trust (the configuration every fielded Xenon runs and that passed NIST 8259), except a 25–50 unit fused pilot ring built by the MP-intent line process. CVTE fusing of full production is authorized at the first lot after the pilot soak completes and the Tier 0 and Tier 1 gates in Section 4 pass. Malata follows after Tier 2.
-- **Allow Option B** (fuse all of MP lot 1) only by an explicit go decision on Day 18 if every Tier 0 STOP-SHIP gate has passed, **and** with the compensating control that no production OTA is pushed to fused units until Tier 3 (rollout controls plus pilot soak) is complete. Since field bricks are OTA-induced, an OTA freeze on the fused population removes the untested exposure during the soak window.
+- **Pass release preconditions before any unit reaches a customer**: fuse-map read-back on a sample including `Disable_Rom_Cmd`, fingerprint and key checks on that build, and forced BROM download demonstrated on one healthy fused unit.
+- **Receive at least two full OTA transitions** with per-serial telemetry, alongside a tracked unfused control group receiving the same packages.
+- **Exit on evidence, not elapsed days**: zero unrecoverable units, outcomes indistinguishable from the control group, E5 demonstrated, and the Group G key gates closed.
+
+Two consequences are accepted with this posture. Every unfused MP unit is permanently unfused. And every unfused MP unit must carry an `ATTR_SBOOT_ENABLE` preloader (A0-b), or the bulk of production ships with no boot-chain signature enforcement at all.
 
 **4. Four items must start today** because they have the longest lead time and each one alone blocks fusing:
 
@@ -121,7 +127,9 @@ With Source E in hand the hypothesis is **correct for the A/B update path and fo
 
 ### 3.1 Options
 
-| | Option A (recommended default) | Option B (stretch, explicit go on Day 18) |
+*Revision 1.3: Option A is the decided posture, with the 100 CVTE-fused units as the pilot ring (Section 3.3). Option B is retained in this table for the record only and is withdrawn.*
+
+| | Option A (decided) | Option B (withdrawn) |
 |---|---|---|
 | MP lot 1 | Software RoT, plus 25–50 unit fused pilot ring built by the MP-intent line process and placed at ICON-controlled sites | All units fused |
 | Fusing authorization for CVTE production | First lot after Tier 0 + Tier 1 pass **and** pilot soak (K1–K3) completes | Day 18, if every Tier 0 STOP-SHIP and Tier 1 gate has passed |
@@ -143,13 +151,57 @@ Because fusing is a line step and not a design change, deferring it costs one lo
 | 4–10 | Fused sacrificial (5 + spares) | E2–E4, E6; C1–C13 five times each; D7 200-cycle randomised soak; D8 brown-out; M5 verity error; N3 attestation; G4 hash regeneration; G7 fuse map read-back; G9 userspace fuse-write attempts | Zero unrecoverable; every failure mode has a recovery path |
 | 8–14 | CVTE line | L1–L8 and I1–I5 witnessed by ICON; G10 build audit; H1–H5 depot at CVTE and at the US service site including a full-image profile (R19) | Station interlocked; per-serial trace; depot proven at two sites |
 | 12–18 | Release engineering | J1–J5: pipeline signature gate, rings at 0.1 / 1 / 10 / 100 percent, automatic halt, kill switch, CDN integrity, telemetry incl. fuse state | Bad build halted in a lab ring |
-| 14 onward | Pilot | K1: 25–50 fused units built by MP-intent process; K2 two OTA transitions; K3 two random depot recoveries | 30 days, zero unrecoverable (completes after MP) |
+| 1–10 | Cohort preconditions | P1 fuse-map read-back on ten of the 100; P2 forced download on a healthy fused unit; P3 fingerprint, certificates, attestation on the cohort build; P4 key decision; P5 backend records; P6 software parity | Cohort cleared for ICON-controlled placement |
+| 10 onward | Cohort field (Section 3.3) | ICON-controlled ring of 15 to 20 takes the first OTA; customer placement of the remainder after that; K2 two OTA transitions; K3 two depot recoveries; control group tracked in parallel | X1 to X4 (completes after MP, likely 60 to 90 days) |
 | 19 | **Re-test on final build** | Re-run G1, G2, G4, N3, B1, B2, C3, C5, D2, D4, F1, M5 on signed VKC1_20260919. Any re-sign changes hashes; nothing tested on 0909 transfers automatically. Reserve 3 days. | Final artefact pairing signed off (L5) |
 | 18 | **Go / No-Go** | Tier 0 and Tier 1 review. Option B only if all pass. | Signed decision record |
 | 21 | MP start | Option A or B per decision | |
 | MP + 5 to 10 | Malata | Tier 2 transfer and witnessed first-article run before Malata's first fused lot | |
 
-Build 0919 arrives on Day 7 and the reserve for re-test on it is the tightest constraint in this schedule. If 0919 slips past Day 12, Option B is not achievable and Option A applies automatically.
+Build 0919 arrives on Day 7 and the reserve for re-test on it is the tightest constraint in this schedule. With Option B withdrawn, the Day 18 decision is narrower: it authorizes release of the fused cohort to the field and confirms the unfused MP configuration (A0-b), not fusing of production.
+
+### 3.3 Fused field cohort protocol (the 100 CVTE units)
+
+The cohort exists, so the question is not whether to build a pilot but how to extract a decision from it. "Track the serials for a period of time" is restated below as preconditions, a measurement, a control, and exit criteria.
+
+**Release preconditions.** None of the 100 goes to a customer until all of these are on file.
+
+| # | Precondition | Why |
+|---|---|---|
+| P1 | Fuse-map read-back on at least ten of the 100: `sbc_en` set, `sbc_pub_key_hash` matches the ICON-verified hash (G4), `Enable_DAA`, `Disable_Rom_Cmd`, `jtag_en`, `debug_en` recorded. Cross-check against the `input.xml` CVTE used (open question 20) | The image that was burned is unverified. If `Disable_Rom_Cmd` is set, the cohort has no USB recovery path and a field brick is a board swap |
+| P2 | Forced BROM download demonstrated on one healthy unit from the cohort, then E5 on BRICK-1 | Proves the recovery path exists for this exact fuse map before customers depend on it |
+| P3 | G1, G2 and N3 on the cohort's build: fingerprint, certificate chain, key attestation reporting verified and locked against the burned hash | The 30 July build predates the dev-keys finding |
+| P4 | Key-rotation decision recorded (G3, K0). If ICON rotates, the cohort keeps its own signing chain for life or is withdrawn; if not, the accepted residual risk of the Basecamp-distributed key is signed off | The cohort's hash is fixed. Rotation splits the fleet into two signing chains permanently |
+| P5 | Per-serial record for every cohort unit in the OTA backend with fuse state, fingerprint, slot and the depot routing flag (J4) | Depot must never attempt an unsigned flash on a cohort unit, and OTA rings must be able to target by fuse state |
+| P6 | Cohort units run the same OTA client, telemetry agent and release as the unfused MP units | Otherwise cohort and control are not comparable |
+
+**Allocation of the 100.** Not all of them should go to customers.
+
+| Allocation | Qty | Use |
+|---|---|---|
+| Sacrificial and golden test units | 7 | CLOSED-1..7 in the sample matrix (Groups C, D, E, H, M, N3). Replaces the need to build new fused units |
+| ICON-controlled field units | 15 to 20 | Offices, employee homes, test gyms. First ring for every cohort OTA; depot rehearsal candidates (K3) |
+| Customer field units | remainder (roughly 70 to 75) | Normal retail placement, released only after P1 to P6, and only after the ICON-controlled ring has taken the first OTA cleanly |
+
+**Measurement.** Field time produces no data unless updates are pushed. The cohort must receive at least two full OTA transitions (K2), one of which should be the transition every MP unit will also take. Per serial and per transition, record: download outcome, install outcome, slot switch, boot-success marker, boot attempts before success, verified-boot state after update, and any depot or RMA event with its recovery result. Naturally occurring power interruptions on a battery-less console are part of the exposure and should be counted from boot-reason telemetry.
+
+**Control group.** The unfused MP units are the control. Track a matched sample (at least the same size as the customer cohort, preferably ten times larger) through the same OTA transitions with the same telemetry. Since fusing does not change how an OTA is verified or how a slot falls back (Section 2), the two populations should be indistinguishable. Divergence is the finding.
+
+**What the cohort can and cannot show.** With roughly 100 units and two transitions, zero failures bounds the fused OTA brick rate at about 1.5 percent at 95 percent confidence. That detects a systematic defect in the fused path. It does not detect a rare one, and it says nothing about key custody, depot readiness or line controls, which remain gated by Tiers 0 to 2 regardless of cohort results. The cohort retires R13 (no organisational experience) and R5 (fallback on a fused unit never measured); it does not retire R1, R2 or R3.
+
+**Exit criteria for authorizing fused production.**
+
+| # | Criterion |
+|---|---|
+| X1 | At least two OTA transitions completed across the cohort with zero unrecoverable units |
+| X2 | Cohort update-outcome distribution indistinguishable from the control group on the same transitions |
+| X3 | E5 passed: forced BROM recovery demonstrated on a bricked fused unit |
+| X4 | At least two cohort units recovered at a depot using only the published procedure (K3, H1) |
+| X5 | All Tier 0 gates closed, including G3/K0 key decision and G7 fuse map with `Disable_Rom_Cmd` unset |
+| X6 | Tier 1 line controls passed at CVTE; Tier 2 at Malata before Malata's first fused lot |
+| X7 | Decision recorded with the accepted count of permanently unfused units shipped during the cohort period |
+
+Minimum elapsed time is set by X1, not by a calendar. Two transitions at a normal release cadence is likely 60 to 90 days.
 
 ---
 
@@ -248,7 +300,8 @@ Test content is Plan B groups A–N with Plan A's glitch matrix mapped in. Only 
 | CLOSED-6..7 (added) | 2 | Fused | Spares for the 200-cycle soak and for the fresh brick required by E5 |
 | BRICK-1 | 1 | Fused, unbootable | J26080143-0A00076, E5 acceptance vehicle |
 | USERDEBUG-F (added) | 1 | Fused, userdebug signed with release keys | Required by N10 for VTS on a fused unit; is itself a key-custody request |
-| PILOT | 25–50 | Fused, MP-intent line process | Group K soak at ICON-controlled sites |
+| COHORT (r1.3) | 100 total, 7 of which are CLOSED-1..7 above | Fused by CVTE on 30 July | Section 3.3: 15 to 20 ICON-controlled field units, roughly 70 to 75 customer units after preconditions P1 to P6 |
+| CONTROL (r1.3) | ≥ customer cohort size, preferably 10× | Unfused MP units, `ATTR_SBOOT_ENABLE` preloader | Same OTA transitions and telemetry as the cohort; the comparison population for X2 |
 
 ### 5.2 Additions and changes to Plan B r0.4
 
@@ -345,6 +398,9 @@ These are needed either to run the plan or to make the Option A / B decision. No
 20. Whether the ICON platform keys that sign the Android OTA (the `dev-keys` question) and the MediaTek boot-chain keys (`root_prvk.pem`, `img_prvk.pem`, `da_prvk.pem`, `epp_prvk.pem`) are managed as one custody problem or two. Source F section 5 and 6 show the root public key is compiled into the preloader, the DA and LK, so a root rotation rebuilds all three; G3 must name a holder for each key, and K0 freezes all of them.
 21. What `efuse_iFitG520.img` actually encodes. Source F section 7 lists `Enable_SBC`, `Enable_DAA` and `Disable_Rom_Cmd` as the three `input.xml` switches, and the preloader GFH config carries `brom_magic_cmd_mode_permanent_dis`, `jtag_en` and `debug_en`. No source in this set states the values CVTE used. The plan has been assuming SBC only; that is unverified until the XML and a read-back are on file.
 22. Whether BROM on MT8371 with eMMC ever falls back to the second preloader copy. Source F documents the fallback for NAND. If eMMC has none, the product has no preloader redundancy in either configuration and `preloader_b` is inert.
+23. The state of the 100 fused units: which firmware they carry, whether their serials and per-serial fuse read-backs from the factory-test check are already in ICON's hands, whether any have already been shipped or committed to customers, and whether they run the production OTA client and telemetry agent. P1 to P6 assume they are still at CVTE or ICON.
+24. Whether "sufficient test data" has an agreed definition. Section 3.3 proposes X1 to X7; without a signed definition the cohort period has no end and every MP lot ships unfused by default.
+25. Whether the OTA backend can target rings by fuse state and can hold a cohort-first ring ahead of the control group. Without that, the cohort cannot be made the first ring, and the control comparison cannot be run on the same transitions.
 
 ---
 
