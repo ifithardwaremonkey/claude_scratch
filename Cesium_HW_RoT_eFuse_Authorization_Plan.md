@@ -9,9 +9,11 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.5 draft, 12 September 2026 (1.0 to 1.4 issued earlier the same day) |
+| Revision | 1.6 draft, 12 September 2026 (1.0 to 1.5 issued earlier the same day) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.6.** Financial model in Section 6.3 populated with the program assumptions of 100,000 tablets in the field at $170 per tablet; the hardware-RoT premium is itemised term by term. Section 3.3 gains a CVTE deliverables checklist for releasing the 100-unit cohort, including the forced-download demonstration (P2, E5) that was not among the five items sent on 12 Sep. Section 2.1 records that the unsigned configuration is reference only and not a program option: all testing to date has run on software root of trust and the 2 October MP date does not permit a configuration change. Assumption 1 partly closed.
 
 **Changes in revision 1.5.** Correction: there is no VKC1_20260919 build. VKC1_20260909 is the last OS build and the MP release candidate. The 0919 label was inherited from Source B's header and has been removed throughout. Consequences: the Day 19 "re-test on final build" reserve becomes conditional, triggered only if 0909 is re-signed by the G1 release-signing step or a K0 key decision; the schedule no longer has a build-arrival dependency; and the fused cohort's upgrade from its 30 July firmware to 0909 is its first counted OTA transition under Section 3.3.
 
@@ -107,6 +109,8 @@ With Source E in hand the hypothesis is **correct for the A/B update path and fo
 | Reversibility | Full | Full, by re-flash | None |
 | Source E's recommendation | Bring-up only | 100 to 500 unit field trials | Production shipping mode |
 
+*The unsigned column is reference only. It is not a program option: all Cesium testing has run on software root of trust and the 2 October MP date does not permit a configuration change. The comparison that matters is the right two columns.*
+
 ### 2.2 Failure modes, open versus closed
 
 | Failure mode | Software RoT (open, if `ATTR_SBOOT_ENABLE`) | Hardware RoT (SBC fused) | Marginal risk from fusing |
@@ -187,6 +191,21 @@ The cohort exists, so the question is not whether to build a pilot but how to ex
 | Sacrificial and golden test units | 7 | CLOSED-1..7 in the sample matrix (Groups C, D, E, H, M, N3). Replaces the need to build new fused units |
 | ICON-controlled field units | 15 to 20 | Offices, employee homes, test gyms. First ring for every cohort OTA; depot rehearsal candidates (K3) |
 | Customer field units | remainder (roughly 70 to 75) | Normal retail placement, released only after P1 to P6, and only after the ICON-controlled ring has taken the first OTA cleanly |
+
+**CVTE deliverables to release the cohort (r1.6).** Items marked "sent" were in ICON's 12 September reply; the rest are still to be requested.
+
+| # | Deliverable | Plan reference | Status |
+|---|---|---|---|
+| C1 | eFuse read-back log per serial for all 100, plus the `input.xml` and preloader GFH configuration used to build `efuse_iFitG520.img` | P1, G7 | Sent (item 3) |
+| C2 | Demonstrate forced BROM download mode on one healthy fused unit, then recover J26080143-0A00076 with a signed build. Video plus console trace, with the exact button, hold timing and tool version | P2, E5 | **Not yet requested** |
+| C3 | `MTK_SEC_BOOT` and `MTK_SEC_USBDL` values in the 0909 preloader makefile | A0, A0-b | Sent (item 2) |
+| C4 | Root public key (`root_pubk.der`) so ICON can regenerate `sbc_pub_key_hash` and match it to read-back | G4 | Not yet requested |
+| C5 | Signed `DA_BR.bin`, signed 0909 image, pinned SP Flash Tool and driver versions, and a written depot procedure including a full-image profile, not only the boot-chain profile | H1, H4, R19 | Not yet requested |
+| C6 | Firmware version currently on the 100, and confirmation that the 0909 OTA package (full or incremental) applies to it | P6, K2 | Not yet requested |
+| C7 | Seven of the 100 released to ICON as CLOSED-1..7 for destructive testing | Sample matrix | Not yet requested |
+| C8 | Same root, image, DA and platform keys for the cohort and the unfused batch | P6 | Sent (item 4) |
+
+ICON-side prerequisites: N3 key attestation on a cohort unit, P5 backend records with fuse state per serial, and the 0909 OTA applied to the ICON-controlled ring before any customer placement.
 
 **Measurement.** Field time produces no data unless updates are pushed. The cohort must receive at least two full OTA transitions (K2), one of which should be the transition every MP unit will also take. Per serial and per transition, record: download outcome, install outcome, slot switch, boot-success marker, boot attempts before success, verified-boot state after update, and any depot or RMA event with its recovery result. Naturally occurring power interruptions on a battery-less console are part of the exposure and should be counted from boot-reason telemetry.
 
@@ -355,16 +374,34 @@ Per Plan B 4.2, plus: per-serial fuse state in the backend, programmable DC sour
 - Spare-board inventory must be fuse-state matched to the units it repairs.
 - Field-service decision tree published: symptom, recovery action, escalation (H5).
 
-### 6.3 Financial framing
+### 6.3 Financial model (r1.6)
 
-Fusing does not change the OTA failure probability. It changes two cost terms:
+**Program assumptions.** 100,000 tablets in the field. $170 per tablet. Fleet value at risk $17.0M. Placeholders, to be replaced when known: depot recovery including two-way shipping $50 per unit; field replacement logistics $50 on top of the tablet; boot0 storage corruption 0.05 percent per year; fuse-station scrap 0.1 percent (the 100-unit trial had zero; I5 measures it over 500).
 
-- **Per-incident recovery cost rises**: depot signed flash replaces a generic flash, and a preloader-mode brick that does not enumerate requires the E5 procedure or a board swap.
-- **Process-error cost becomes unbounded per batch**: a wrong hash or a compromised key on the fused population is a full replacement with no software remedy.
+Fusing does not change the OTA failure probability. It changes the recovery cost per incident, adds one brick mode, and adds one unbounded tail. Term by term:
 
-The exposure that staged rollout bounds is the same for both configurations: worst case before automatic halt is the ring size times the unit replacement cost. The exposure that only gates bound is the fused lot size times unit cost. That is the argument for Option A on lot 1: it caps the second term at the pilot size while the first term is being measured.
+| Exposure term | Software RoT (unfused) | Hardware RoT (fused) | Delta from fusing |
+|---|---|---|---|
+| A/B OTA failure: payload rejected or slot falls back | Recovers in place. $0 | Same | **$0** |
+| Bad OTA reaching a ring before automatic halt: 0.1 / 1 / 10 percent | 100 / 1,000 / 10,000 units affected. If depot-recoverable: $5k / $50k / $500k. If not: $22k / $220k / $2.2M | Same unit counts | $0 if recoverable; otherwise see next row |
+| Boot-chain brick (preloader, or vbmeta chain failure with no fallback) | Soft brick. USB re-flash at depot, about $50 | Hard brick unless E5 works. Replacement $170 plus $50 logistics | **About $170 more per incident.** Occurs only if OTA writes the preloader (excluded by E1) or storage corrupts boot0 |
+| Storage failure in boot0 at 0.05 percent per year | 50 units, about $2,500 per year | 50 units, about $11,000 per year | About $8,500 per year |
+| Systematic key or fuse-image error on the fused population (wrong hash, `Disable_Rom_Cmd` set, key mismatch) | Not applicable: re-flash | Whole fused population lost. **$22M** if all 100k fused. **$22,000** if only the 100-unit cohort | **The unbounded term.** The cohort posture caps it |
+| Fuse station scrap at 0.1 percent | $0 | 100 units per 100k built, $17,000 | $17,000 per 100k |
+| Depot tooling: signed DA custody, pinned tool, two sites | Existing depot | One-off setup, low tens of thousands | Fixed, small |
+| Key custody: HSM or escrow, release-signing step | Required anyway for G1 | Same | $0 delta |
+| Line cycle time for the fuse step | $0 | L8 measures it; CVTE's scripted tool makes it a single operator action | Small per unit |
 
-Inputs needed to put numbers on this are listed in Section 7.
+**Reading the table.**
+
+- The largest term, a bad OTA reaching a large ring, is the same on both configurations and is bounded only by staged rollout (J2) and the kill switch (J3). Neither the fuse nor the cohort changes it. This is where iFIT's stated fear of "unforeseen OTA issues" actually lives, and Group J is the control.
+- Fusing adds roughly one tablet's cost per boot-chain brick. With the preloader excluded from OTA, boot-chain bricks come only from storage failure and are rare. Over a year on 100k units this is in the low tens of thousands of dollars, provided E5 works.
+- Fusing introduces the one unbounded term. With the 100-unit cohort it is about $22,000. With all of production it is the fleet. That is the quantitative case for the decided posture.
+- If E5 does not pass, or `Disable_Rom_Cmd` is found set, every boot-chain brick on a fused unit is a $220 event with no recovery, and the systematic term has no cap. That is why both are stop-ship rather than risks to be priced.
+
+**Not quantified here.** The security value of hardware RoT for a kiosk console (physical re-flash, OS replacement, content protection, EN 18031 evidence). The true cost of a field replacement on an installed console, which likely exceeds the $50 placeholder. The MP OTA cadence, which sets how many times per year the ring cap is tested.
+
+**Unsigned boot is not a program option.** All testing has run on software root of trust and the 2 October MP date does not permit a configuration change. The unsigned column in Section 2.1 is a reference from Source E only.
 
 ---
 
@@ -374,7 +411,7 @@ These are needed either to run the plan or to make the Option A / B decision. No
 
 **Commercial and compliance**
 
-1. Fleet size for lot 1 and for the program, unit replacement cost, RMA logistics cost and warranty terms. Without these the financial framing in 6.3 has no numbers.
+1. **Partly closed r1.6**: 100,000 tablets in the field at $170 per tablet. Still needed: the true cost of a field replacement on an installed console (service call, shipping, swap), the depot recovery cost per unit, warranty terms, and the planned OTA cadence. Section 6.3 uses $50 placeholders for the first two.
 2. Whether Cesium ships into the EU and whether the EN 18031 assessment accepts a software root of trust. Xenon passed NIST 8259 with software RoT. If the compliance body requires hardware RoT, Option A's "permanently open lot 1" has a compliance cost, not only a security-posture cost.
 3. The threat model the fuse is meant to close. For a kiosk fitness console, physical-access OS replacement, content and DRM, and brand protection are different threats. Remote threats are already covered by signed OTA on the open configuration. This decides whether shipping any unit unfused is acceptable.
 4. Who signs the fuse authorization for CVTE and for Malata, and whether the MP line can start unfused and switch to fused mid-lot. If it can, the "three weeks" deadline applies to the line start and not to the fusing decision, which relieves the schedule considerably.
