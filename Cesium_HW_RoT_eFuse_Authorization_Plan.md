@@ -9,15 +9,17 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.6 draft, 12 September 2026 (1.0 to 1.5 issued earlier the same day) |
+| Revision | 1.7 draft, 12 September 2026 (1.0 to 1.6 issued earlier the same day) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.7.** Record correction: the five-item reply described in revisions 1.4 to 1.6 had not been sent. It is replaced by a single consolidated 12-item ask to CVTE on 12 September (Section 8), which adds the forced-download demonstration, the root public key, depot artefacts, cohort firmware version and release of seven units for testing. Section 3.3 deliverables C1 to C10 now map to the numbered items of that message.
 
 **Changes in revision 1.6.** Financial model in Section 6.3 populated with the program assumptions of 100,000 tablets in the field at $170 per tablet; the hardware-RoT premium is itemised term by term. Section 3.3 gains a CVTE deliverables checklist for releasing the 100-unit cohort, including the forced-download demonstration (P2, E5) that was not among the five items sent on 12 Sep. Section 2.1 records that the unsigned configuration is reference only and not a program option: all testing to date has run on software root of trust and the 2 October MP date does not permit a configuration change. Assumption 1 partly closed.
 
 **Changes in revision 1.5.** Correction: there is no VKC1_20260919 build. VKC1_20260909 is the last OS build and the MP release candidate. The 0919 label was inherited from Source B's header and has been removed throughout. Consequences: the Day 19 "re-test on final build" reserve becomes conditional, triggered only if 0909 is re-signed by the G1 release-signing step or a K0 key decision; the schedule no longer has a build-arrival dependency; and the fused cohort's upgrade from its 30 July firmware to 0909 is its first counted OTA transition under Section 3.3.
 
-**Changes in revision 1.4.** Three inputs from 12 September. (a) The 0909 fingerprint is confirmed as `iFit_Embedded/iFitG520/Cesium:VanillaIceCream/AP3A.240905.015.A2/VKC1_20260909:user/dev-keys`, and a separate analysis with CVTE certificate evidence reclassifies the tag from blocker to build hygiene: the OTA certificate, `platform.x509.pem` and the payload signature all carry the ICON certificate (O = Icon Health and Fitness, CN = ifit.com), not an AOSP test key. G1 is restated accordingly: the gate is a release-signing step separate from compilation with keys ICON holds; the tag is fixed as a side effect. (b) CVTE's message of the same day describes a production-line scripted fuse tool with per-unit logs, a build pipeline that signs `DA_BR.bin` and firmware at compile time and gates firmware generation on a hash match against `efuse_iFitG520.img` and the private key, and a factory test that hard-fails unfused units. This confirms the MediaTek root key and the platform keys are resident on CVTE's build system, and it means the factory test needs an unfused mode for the next batch (new I6). (c) ICON replied to CVTE: no eFuse programming on the next batch; five items requested (Section 8, items 23 to 27). Source G added.
+**Changes in revision 1.4.** Three inputs from 12 September. (a) The 0909 fingerprint is confirmed as `iFit_Embedded/iFitG520/Cesium:VanillaIceCream/AP3A.240905.015.A2/VKC1_20260909:user/dev-keys`, and a separate analysis with CVTE certificate evidence reclassifies the tag from blocker to build hygiene: the OTA certificate, `platform.x509.pem` and the payload signature all carry the ICON certificate (O = Icon Health and Fitness, CN = ifit.com), not an AOSP test key. G1 is restated accordingly: the gate is a release-signing step separate from compilation with keys ICON holds; the tag is fixed as a side effect. (b) CVTE's message of the same day describes a production-line scripted fuse tool with per-unit logs, a build pipeline that signs `DA_BR.bin` and firmware at compile time and gates firmware generation on a hash match against `efuse_iFitG520.img` and the private key, and a factory test that hard-fails unfused units. This confirms the MediaTek root key and the platform keys are resident on CVTE's build system, and it means the factory test needs an unfused mode for the next batch (new I6). (c) ICON's decision to CVTE: no eFuse programming on the next batch, with a consolidated 12-item ask (Section 8). Source G added.
 
 **Changes in revision 1.3.** Program decision recorded: CVTE has already fused 100 units, and the intended posture is to field those serials as a tracked cohort while the remainder of mass production ships unfused until sufficient data exists. This is Option A with an existing cohort. Option B is withdrawn. New Section 3.3 defines the cohort protocol: release preconditions (fuse-map read-back, fingerprint and key checks, forced-download demonstration on a healthy fused unit), the data the cohort must generate (OTA transitions, not calendar time), the unfused control group, and the exit criteria that authorize fused production at CVTE and then Malata. Sacrificial and golden fused test units are now drawn from the 100. The key-rotation decision is flagged as fleet-splitting. Assumptions 23 to 25 added.
 
@@ -51,7 +53,7 @@ Two consequences are accepted with this posture. Every unfused MP unit is perman
 **4. Four items must start today** because they have the longest lead time and each one alone blocks fusing:
 
 1. Revive bricked unit J26080143-0A00076 via forced BROM download (E5). If this cannot be shown, closed configuration is not accepted at all.
-2. ~~Resolve the `dev-keys` fingerprint versus ICON certificates.~~ **Resolved 12 Sep as to which key**: the certificates are ICON's (G2 closed on 0909, the MP release candidate). **Open as to custody**: the tag means the keys are consumed at compile time on CVTE's build system. G1 is now "release signing in a step separate from compilation, with keys ICON holds", requested from CVTE as item 5 of the 12 Sep reply.
+2. ~~Resolve the `dev-keys` fingerprint versus ICON certificates.~~ **Resolved 12 Sep as to which key**: the certificates are ICON's (G2 closed on 0909, the MP release candidate). **Open as to custody**: the tag means the keys are consumed at compile time on CVTE's build system. G1 is now "release signing in a step separate from compilation, with keys ICON holds", requested from CVTE as item 12 of the 12 Sep consolidated ask.
 3. Key custody (G3, G5): AVB private keys (`img_prvk.pem`, `da_prvk.pem`, `root_prvk.pem`) were posted as Basecamp attachments to a 19-person distribution including ODM client accounts. Keys distributed that way cannot be considered in custody. Decide within 48 hours whether to rotate to an ICON-held key and regenerate `efuse_iFitG520.img` before any MP unit is fused. Rotation costs roughly 3 to 5 days of re-signing and re-test; not rotating means the fleet permanently trusts a key at least 19 people have handled. Whatever is decided, rotation must complete before the first unit ships under either option, because the preloader carries the root key (software RoT) or is verified against it (hardware RoT) and is outside OTA scope.
 4. Written CVTE confirmation of exactly which partitions the OTA payload writes and that preloader/boot0 are never in scope (E1).
 5. Open the eFuse configuration (`security/efuse/input.xml`) and the generated `efuse_iFitG520.img` and read the state of `Disable_Rom_Cmd`, `jtag_en` and `debug_en`. MediaTek's guide recommends `Disable_Rom_Cmd="true"` for high security; set, it permanently removes BROM command mode and therefore every USB recovery path including E5. If it is true in the image that was burned on the first articles and the 100-unit trial, those units cannot be recovered by any documented procedure, and the fuse image must be regenerated before any MP unit is fused. This is the leading hypothesis for why the bricked unit does not enumerate.
@@ -192,18 +194,20 @@ The cohort exists, so the question is not whether to build a pilot but how to ex
 | ICON-controlled field units | 15 to 20 | Offices, employee homes, test gyms. First ring for every cohort OTA; depot rehearsal candidates (K3) |
 | Customer field units | remainder (roughly 70 to 75) | Normal retail placement, released only after P1 to P6, and only after the ICON-controlled ring has taken the first OTA cleanly |
 
-**CVTE deliverables to release the cohort (r1.6).** Items marked "sent" were in ICON's 12 September reply; the rest are still to be requested.
+**CVTE deliverables to release the cohort (r1.7).** All were sent to CVTE on 12 September as one consolidated 12-item ask (Section 8). Column "Sent as" gives the item number in that message.
 
-| # | Deliverable | Plan reference | Status |
+| # | Deliverable | Plan reference | Sent as |
 |---|---|---|---|
-| C1 | eFuse read-back log per serial for all 100, plus the `input.xml` and preloader GFH configuration used to build `efuse_iFitG520.img` | P1, G7 | Sent (item 3) |
-| C2 | Demonstrate forced BROM download mode on one healthy fused unit, then recover J26080143-0A00076 with a signed build. Video plus console trace, with the exact button, hold timing and tool version | P2, E5 | **Not yet requested** |
-| C3 | `MTK_SEC_BOOT` and `MTK_SEC_USBDL` values in the 0909 preloader makefile | A0, A0-b | Sent (item 2) |
-| C4 | Root public key (`root_pubk.der`) so ICON can regenerate `sbc_pub_key_hash` and match it to read-back | G4 | Not yet requested |
-| C5 | Signed `DA_BR.bin`, signed 0909 image, pinned SP Flash Tool and driver versions, and a written depot procedure including a full-image profile, not only the boot-chain profile | H1, H4, R19 | Not yet requested |
-| C6 | Firmware version currently on the 100, and confirmation that the 0909 OTA package (full or incremental) applies to it | P6, K2 | Not yet requested |
-| C7 | Seven of the 100 released to ICON as CLOSED-1..7 for destructive testing | Sample matrix | Not yet requested |
-| C8 | Same root, image, DA and platform keys for the cohort and the unfused batch | P6 | Sent (item 4) |
+| C1 | eFuse read-back log per serial for all 100, plus the `input.xml` and preloader GFH configuration used to build `efuse_iFitG520.img` | P1, G7 | Item 4 |
+| C2 | Demonstrate forced BROM download mode on one healthy fused unit, then recover J26080143-0A00076 with a signed build. Video plus console trace, with the exact button, hold timing and tool version | P2, E5 | Items 1 to 3 |
+| C3 | `MTK_SEC_BOOT` and `MTK_SEC_USBDL` values in the 0909 preloader makefile | A0, A0-b | Item 6 |
+| C4 | Root public key (`root_pubk.der`) so ICON can regenerate `sbc_pub_key_hash` and match it to read-back | G4 | Item 5 |
+| C5 | Signed `DA_BR.bin`, signed 0909 image, pinned SP Flash Tool and driver versions, and a written depot procedure including a full-image profile, not only the boot-chain profile | H1, H4, R19 | Item 9 |
+| C6 | Firmware version currently on the 100, and confirmation that the 0909 OTA package (full or incremental) applies to it | P6, K2 | Item 10 |
+| C7 | Seven of the 100 released to ICON as CLOSED-1..7 for destructive testing | Sample matrix | Item 11 |
+| C8 | Same root, image, DA and platform keys for the cohort and the unfused batch | P6 | Item 8 |
+| C9 | Factory test accepts unfused units and logs eFuse state per serial | I6 | Item 7 |
+| C10 | Release-signing step separate from compilation | G1 | Item 12 |
 
 ICON-side prerequisites: N3 key attestation on a cohort unit, P5 backend records with fuse state per serial, and the 0909 OTA applied to the ICON-controlled ring before any customer placement.
 
@@ -439,7 +443,7 @@ These are needed either to run the plan or to make the Option A / B decision. No
 17. How the backend, depot and RMA will handle a mixed fused and unfused fleet if Option A is chosen, and how an OTA freeze by fuse state would be implemented if Option B is chosen.
 18. Malata's readiness: the 100-unit trial on 30 July was a CVTE run. Malata has not fused a unit on this program.
 19. Which preloader security flag the 0909 build carries (`ATTR_SBOOT_ENABLE` versus `ATTR_SBOOT_ONLY_ENABLE_ON_SCHIP`), and whether `MTK_SEC_USBDL` is set. Everything the brief assumes about "software root of trust already enforcing signatures" rests on this one makefile line, and the Basecamp record is consistent with either answer at different dates.
-20. **Partly answered 12 Sep.** CVTE's description of compile-time signing with a hash gate against `efuse_iFitG520.img` "and the private key" places the MediaTek root key on CVTE's build system, and the `dev-keys` tag places the Android platform keys there too. The remaining question is whether ICON holds independent copies of each, and whether both key families move into the separate release-signing step requested in item 5 of the reply. Whether the ICON platform keys that sign the Android OTA and the MediaTek boot-chain keys (`root_prvk.pem`, `img_prvk.pem`, `da_prvk.pem`, `epp_prvk.pem`) are managed as one custody problem or two. Source F section 5 and 6 show the root public key is compiled into the preloader, the DA and LK, so a root rotation rebuilds all three; G3 must name a holder for each key, and K0 freezes all of them.
+20. **Partly answered 12 Sep.** CVTE's description of compile-time signing with a hash gate against `efuse_iFitG520.img` "and the private key" places the MediaTek root key on CVTE's build system, and the `dev-keys` tag places the Android platform keys there too. The remaining question is whether ICON holds independent copies of each, and whether both key families move into the separate release-signing step requested in item 12 of the consolidated ask. Whether the ICON platform keys that sign the Android OTA and the MediaTek boot-chain keys (`root_prvk.pem`, `img_prvk.pem`, `da_prvk.pem`, `epp_prvk.pem`) are managed as one custody problem or two. Source F section 5 and 6 show the root public key is compiled into the preloader, the DA and LK, so a root rotation rebuilds all three; G3 must name a holder for each key, and K0 freezes all of them.
 21. What `efuse_iFitG520.img` actually encodes. Source F section 7 lists `Enable_SBC`, `Enable_DAA` and `Disable_Rom_Cmd` as the three `input.xml` switches, and the preloader GFH config carries `brom_magic_cmd_mode_permanent_dis`, `jtag_en` and `debug_en`. No source in this set states the values CVTE used. The plan has been assuming SBC only; that is unverified until the XML and a read-back are on file.
 22. Whether BROM on MT8371 with eMMC ever falls back to the second preloader copy. Source F documents the fallback for NAND. If eMMC has none, the product has no preloader redundancy in either configuration and `preloader_b` is inert.
 23. The state of the 100 fused units: which firmware they carry, whether their serials and per-serial fuse read-backs from the factory-test check are already in ICON's hands, whether any have already been shipped or committed to customers, and whether they run the production OTA client and telemetry agent. P1 to P6 assume they are still at CVTE or ICON.
@@ -459,13 +463,22 @@ Plan B section 7 questions 1–16 are carried forward unchanged and should be se
 21. To MediaTek: does BROM on MT8371 attempt the second preloader copy (eMMC boot1) when boot0 fails to load or fails authentication? The Secure Boot Developer Guide V1.1 section 3.1 documents this for NAND only.
 22. To CVTE: which `MTK_SEC_BOOT` and `MTK_SEC_USBDL` values are set in the VKC1_20260909 preloader project makefile?
 
-**Sent to CVTE on 12 September 2026** in ICON's reply declining eFuse programming on the next batch (answers pending):
+**Consolidated ask to CVTE, 12 September 2026**, accompanying ICON's decision not to fuse the next batch. Numbered as sent; answers pending.
 
-23. Factory test to accept unfused units for this batch while still reading and logging eFuse state per serial (I6).
-24. Confirm the unfused batch preloader is `ATTR_SBOOT_ENABLE` / `ATTR_SUSBDL_ENABLE`, or state if it is `ONLY_ENABLE_ON_SCHIP` (covers question 22, A0-b).
-25. Send `input.xml`, preloader GFH configuration and read-back logs for the 100 fused units (covers question 20).
-26. Confirm the unfused batch is signed with the same root, image, DA and platform keys as the fused cohort so one OTA package serves both populations.
-27. Confirm the build will be produced as `release-keys` through a signing step separate from compilation (G1); custody to be discussed separately.
+| Sent item | Content | Plan reference |
+|---|---|---|
+| 1 | Healthy fused unit: enter BROM download mode by button-and-power sequence; show USB enumeration and SP Flash Tool connection; do not flash | P2, C2, conflict 11 |
+| 2 | J26080143-0A00076: same entry, flash signed 0909 with signed `DA_BR.bin`, boot to Android, fuse read-back unchanged | E5 |
+| 3 | Written procedure: button, hold time, power timing, tool and driver versions | E5, H5 |
+| 4 | `input.xml` and GFH config for `efuse_iFitG520.img` with `Enable_SBC`, `Enable_DAA`, `Disable_Rom_Cmd`, `brom_magic_cmd_mode_permanent_dis`, `jtag_en`, `debug_en`; read-back logs for all 100 | P1, G7, question 20 |
+| 5 | Root public key for independent hash regeneration | G4, C4 |
+| 6 | Unfused batch preloader flags: confirm `ATTR_SBOOT_ENABLE` / `ATTR_SUSBDL_ENABLE`, or state if `ONLY_ENABLE_ON_SCHIP` | A0, A0-b, question 22 |
+| 7 | Factory test accepts unfused units and still logs eFuse state per serial | I6 |
+| 8 | Same root, image, DA and platform keys for cohort and unfused batch | P6, C8 |
+| 9 | Signed `DA_BR.bin`, signed 0909, pinned tool and driver versions, depot procedure with full-image profile | H1, H4, R19, C5 |
+| 10 | Firmware currently on the 100; confirm 0909 OTA applies | P6, K2, C6 |
+| 11 | Release seven of the 100 to ICON for destructive testing | Sample matrix, C7 |
+| 12 | Build produced as `release-keys` through a signing step separate from compilation; custody discussed separately | G1 |
 
 **Carried from the dev-keys analysis, not a blocker:**
 
