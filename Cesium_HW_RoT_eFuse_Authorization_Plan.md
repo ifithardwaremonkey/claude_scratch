@@ -9,9 +9,11 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.8 draft, 15 September 2026 (1.0 to 1.7 issued 12 September) |
+| Revision | 1.9 draft, 15 September 2026 (1.0 to 1.7 issued 12 September; 1.8 earlier on 15 September) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.9 (15 September).** Section 3.5 added: a four-level confidence framework (Not ready, Low, Medium, High) for burning fuses on the production line, with the evidence each level requires and the effect of each S1 to S6 outcome. Defined before test execution so the determination is read from evidence rather than fitted to it. Current level: **Low**. The standalone test plan `Cesium_Cohort_Release_Test_Plan_S1-S6` is issued alongside. Spelling converted to American throughout.
 
 **Changes in revision 1.8 (15 September).** CVTE answered the 12-item ask (Source H) and ICON ran the first fused-unit verification. Results: the hardware root of trust is confirmed on a cohort unit by eFuse read-back, eFuse-region diff against an unfused sister and a passing preloader signature check (G4 closed, G7 closed except the BROM command-disable bit, P1 largely closed). Anti-rollback is confirmed off with AVB rollback index 0 (conflict 1 closed, Group F reduced to F1 and F2). Keys unchanged since 27 July; cohort on the 0814 user build; a 0814-to-0909 OTA package exists (C6, C8 closed). **Forced BROM download failed** on the deliberately bricked unit: no USB enumeration in 120 seconds with the download key held (E5 and P2 open, now the single decisive item). CVTE states `MTK_SEC_USBDL = ATTR_SUSBDL_ONLY_ENABLE_ON_SCHIP`; `MTK_SEC_BOOT` still unstated. New Section 3.4 separates what the **cohort shipment** needs (a two-day set, S1 to S6) from what **fused production** needs (the rest of the plan), which is the simplification this revision is for. CVTE's item 11 ("production won't be able to keep up") is answered: production is not waiting on any test; it ships unfused. Open asks 13 to 18 added.
 
@@ -287,6 +289,32 @@ Minimum elapsed time is set by X1, not by a calendar. Two transitions at a norma
 - **S1, S2, S4, S5, S6 pass, S3 fails, S1 shows ROM command disable unset** → release the ICON-controlled ring; hold customer placement for one written MediaTek answer on BROM entry with a failed preloader on a fused MT8371 (ask 15). Exposure meanwhile is bounded by S2: the OTA cannot write the preloader, so the only unrecoverable mode is boot0 storage failure.
 - **S1 shows ROM command disable set** → no cohort unit to customers. The 100 stay ICON-internal as test and demonstration hardware, and the fuse image is regenerated before any further fusing. This outcome would also explain the two bricks.
 - **S2 shows the preloader in OTA scope** → stop; this is a pipeline change before either the cohort or the unfused MP fleet ships.
+
+### 3.5 Confidence framework for burning fuses on the production line
+
+Defined before S1 to S6 execute so that the determination is read off the evidence rather than argued from it. Confidence is stated as one of four levels. Each level requires **every** item in its row; a single missing item holds the level below.
+
+| Level | Meaning | Evidence required | Consequence |
+|---|---|---|---|
+| **Not ready** | A stop-ship finding is open | Any of: ROM command disable set (S1); preloader in OTA scope (S2); hash mismatch or DAA on (S1); a fused unit that neither boots nor recovers in S4 or S5 | No fusing anywhere. Cohort stays internal |
+| **Low** | Fuse mechanism proven; recovery not proven | S1, S2, S4, S6 pass; S5 zero unrecoverable; S3 **failed** or not run; E5 not demonstrated | Cohort to ICON ring only. Production ships unfused. This is the level on 15 September |
+| **Medium** | Recovery path exists; field behavior unmeasured at scale | All of Low, plus S3 pass on a healthy fused unit; E5 pass on a bricked fused unit; cohort in field with first OTA transition complete (X1 half); Group G key gates G3, G4, G7, G11 closed; A0-b passed on an unfused unit | Cohort to customers. Fusing of a **bounded** production lot (one lot, CVTE only) may be authorized with rings and kill switch (J1–J3) proven and the line controls L1–L8, I1–I6 witnessed |
+| **High** | Fused units have survived the field | All of Medium, plus X1 (two transitions, zero unrecoverable), X2 (indistinguishable from control), X4 (two depot recoveries), G1 release-signing custody, G5, G6, G8–G10, Tier 2 at Malata | Fusing authorized for all CVTE production, then Malata |
+
+**How the cohort results move the level.**
+
+| Result | Effect |
+|---|---|
+| S3 pass | Low → eligible for Medium once E5 also passes on the bricked unit |
+| S3 fail with ROM command disable unset | Stays Low; ask 15 to MediaTek becomes the blocker for Medium |
+| S3 fail with ROM command disable set | Not ready |
+| S5 pass | Satisfies the cohort half of X1; the second transition comes with the next MP OTA |
+| S5 any unrecoverable unit | Not ready until root-caused, regardless of S3 |
+| S2 shows preloader in OTA | Not ready for both configurations |
+
+**Quantitative note.** The cohort cannot raise confidence above Medium on its own. One hundred units and two transitions bound the fused OTA brick rate near 1.5 percent at 95 percent confidence, which excludes a systematic defect but not a rare one. High is reached by process evidence (key custody, line controls, depot, rollout controls) plus the cohort, not by more cohort units.
+
+**Reporting.** When S1 to S6 results arrive, this section is updated with the level, the evidence table filled in, and the date. The level is the answer to "how confident are we in burning fuses on the production line."
 
 **Deferred to fused-production authorization, not required for the cohort:** Groups C×5 and D soak on fused units, M3–M8, N1–N11, G5, G6, G8–G10, L1–L8, I1–I5, H2–H5, J1–J5, Tier 2, and G1. They remain in Section 4 unchanged.
 
