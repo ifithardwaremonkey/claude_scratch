@@ -5,8 +5,9 @@
 | | |
 |---|---|
 | Product | Cesium tablet iFitG520, MediaTek MT8371 (tool reports MT8189), board C.G520.702, eMMC, battery-less |
-| Units under test | Cohort of 100 fused by CVTE on 30 July 2026, on VKC1_20260814 user build |
-| Artefacts required | `input.xml`, `GFH_CONFIG.ini`, `root_pubk.der` (CVTE, 14 Sep); VKC1_20260909.zip containing signed `DA_BR.bin` and signed 0909 image; `VKC1_20260814_20260909.zip` OTA package; SP_Flash_Tool_Selector v1.2444 (use V6) with MediaTek USB VCOM drivers |
+| Units under test | Cohort of 100 fused by CVTE on 30 July 2026, currently on the VKC1_20260814 user build |
+| Firmware note | **Do not ask CVTE to reflash the cohort to 0909 before testing.** The cohort must arrive on 0814. The 0814-to-0909 OTA is the first counted fused OTA transition (X1) and the package CVTE attached exists for it. S5 moves five units to 0909 with power interruptions; the ICON ring then takes the same OTA; the remaining units take it before customer placement, so every customer receives a 0909 unit that has already survived one fused OTA. The single S3/S4 unit reaches 0909 by depot flash instead, which is the other recovery path being proven. A factory reflash would erase the cohort's first transition and defer X1 to the next MP release |
+| Artifacts required | `input.xml`, `GFH_CONFIG.ini`, `root_pubk.der` (CVTE, 14 Sep); VKC1_20260909.zip containing signed `DA_BR.bin` and signed 0909 image; `VKC1_20260814_20260909.zip` OTA package; SP_Flash_Tool_Selector v1.2444 (use V6) with MediaTek USB VCOM drivers |
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
 | Revision | 1.0, 15 September 2026 |
@@ -122,13 +123,13 @@
 
 **Pass:** in Attempt B or C, a MediaTek device enumerates and SP Flash Tool reports a connection (DA loaded or "waiting for download" reached). Record which mode (BROM or preloader) by VID:PID. The unit must boot normally afterwards.
 
-**Fail:** no MediaTek device enumerates in any attempt. Interpret with S1: if `Disable_Rom_Cmd` is unset, the failure is procedure, hardware path or BROM behaviour, and ask 15 to MediaTek becomes blocking for customer release; if it is set, the failure is explained and the cohort stays internal.
+**Fail:** no MediaTek device enumerates in any attempt. Interpret with S1: if `Disable_Rom_Cmd` is unset, the failure is procedure, hardware path or BROM behavior, and ask 15 to MediaTek becomes blocking for customer release; if it is set, the failure is explained and the cohort stays internal.
 
 **Note on Attempt A.** If the preloader enumerates briefly even with no key, that is the normal preloader USB window used by the factory SOP and is sufficient for S4. It says nothing about BROM entry when the preloader is bad, which is the E5 question; only a BROM-mode device (`0E8D:0003`) in Attempt B or C answers that.
 
 ---
 
-## S4. Depot flash of a healthy fused unit with signed artefacts
+## S4. Depot flash of a healthy fused unit with signed artifacts
 
 **Gates:** H1 in cohort scope. **Effort:** 1 hour. **Units:** the same unit as S3, after it has been confirmed to boot.
 
