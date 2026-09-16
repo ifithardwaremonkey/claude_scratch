@@ -9,9 +9,11 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.11 draft, 16 September 2026 (1.0 to 1.7 issued 12 September; 1.8 and 1.9 on 15 September; 1.10 earlier on 16 September) |
+| Revision | 1.12 draft, 16 September 2026 (1.0 to 1.7 issued 12 September; 1.8 and 1.9 on 15 September; 1.10 and 1.11 earlier on 16 September) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.12 (16 September).** Manufacturing flow corrected: production tablets go ODM → console vendor → finished-goods vendor → warehouse or store, never to Logan, and are not powered until a customer sets them up. Three changes follow. The ring and test units are an exception shipment ICON must arrange. The 70 to 75 customer cohort units receive the 0814→0909 OTA at CVTE, logged per serial, before entering the console flow, so customers receive 0909 and the cohort's first field OTA coincides with the control group's; the "do not reflash" rule now applies to the ring and test units only. The customer-release hold point is CVTE's outbound dock, and the console vendor must record tablet serial against console serial or fuse-state targeting and depot routing are impossible inside a finished console. Assumption 26 added.
 
 **Changes in revision 1.11 (16 September).** Correction of unit geography. The 100 fused units are at CVTE; ICON holds the bricked unit and at most two others. Section 3.4 now assigns each of S1 to S6 an executor and location: S1, S2 at ICON; S3, S4 and S6 at CVTE with video and logs as evidence; S5 at ICON after the ring units ship. CVTE is asked to ship the 15 to 20 ring units and the 7 test units now, on 0814. Elapsed time to the ring release is set by transit, about one week, not by test effort. The standalone test plan header is corrected to match.
 
@@ -201,7 +203,7 @@ The cohort exists, so the question is not whether to build a pilot but how to ex
 |---|---|---|
 | Sacrificial and golden test units | 7 | CLOSED-1..7 in the sample matrix (Groups C, D, E, H, M, N3). Replaces the need to build new fused units |
 | ICON-controlled field units | 15 to 20 | Offices, employee homes, test gyms. First ring for every cohort OTA; depot rehearsal candidates (K3) |
-| Customer field units | remainder (roughly 70 to 75) | Normal retail placement, released only after P1 to P6, and only after the ICON-controlled ring has taken the first OTA cleanly |
+| Customer field units | remainder (roughly 70 to 75) | Normal retail flow via console vendor, finished-goods vendor and warehouse or store. Held at CVTE until P1 to P6 and the ring's S5 pass; OTA'd 0814→0909 at CVTE with per-serial logs before leaving, so customers receive 0909 (r1.12) |
 
 **CVTE deliverables to release the cohort (r1.7).** All were sent to CVTE on 12 September as one consolidated 12-item ask (Section 8). Column "Sent as" gives the item number in that message.
 
@@ -285,7 +287,15 @@ Minimum elapsed time is set by X1, not by a calendar. Two transitions at a norma
 | S5 | ICON, on the first shipment of ring units after they arrive | Logan | Own records. Cannot start until units arrive |
 | S6 | CVTE, from the per-serial line logs plus three fresh `read-efuse` runs | CVTE | The 100 per-serial fuse logs (item 4 of the ask) plus three new logs |
 
-**Shipment.** CVTE should ship the ICON-ring units (15 to 20) plus the seven test units (C7) now, on 0814, not reflashed. Transit from CVTE to Logan is roughly one week, so S5 cannot complete before about 25 September regardless of anything else. The remaining 70 to 75 stay at CVTE until the customer-release decision. This replaces "everything below is ICON-executable" in earlier revisions.
+**Shipment and manufacturing flow (corrected 16 Sep).** Production tablets from CVTE and Malata do not ship to Logan. The normal flow is ODM → console vendor (tablet integrated into the console) → finished-goods vendor (boxed) → warehouse or store → customer. A tablet on that path is not powered or connected until a customer sets it up. Three consequences:
+
+| Consequence | Plan change |
+|---|---|
+| The ring and test units are an **exception shipment**. Nothing flows to Logan by default | CVTE pulls 15 to 20 ring units plus the 7 test units out of the lot and ships them directly to Logan, on 0814, not reflashed. ICON arranges the shipment and provides consoles or 12 V bench fixtures at ICON sites, since bare tablets are not the shipped product. Transit about one week; S5 cannot complete before about 25 September |
+| The 70 to 75 customer cohort units would otherwise reach customers on 0814 and take their first fused OTA in a customer's home | **CVTE applies the 0814→0909 OTA to the customer cohort units at CVTE before they enter the console flow**, with the update log captured per serial. This adds roughly 75 logged fused transitions toward X1 under controlled conditions, and customers receive 0909 like every unfused MP unit. Their first field OTA is then the next MP release, on the same day as the unfused control group, which is what X2 requires. Fallback if the OTA server is unreachable from CVTE: depot-path flash to 0909 (S4 procedure) per unit, logged. The "do not reflash to 0814" rule applies to the ring and test units only |
+| Once the customer units enter the console vendor's flow they cannot be held or segregated by serial without disrupting three vendors | **The customer-release hold point is CVTE's outbound dock.** The 70 to 75 do not leave CVTE until the release decision in Section 3.4 is signed. The console vendor must record tablet serial against console serial at integration, or the OTA backend cannot target rings by fuse state (P5, J4) and the depot cannot route by it; inside a finished console, fused and unfused tablets are otherwise indistinguishable |
+
+The depot for a fielded fused unit is whoever receives returned consoles (the US service site in H1), not CVTE. Reaching the on-board download switch means opening the console and then the tablet, which fixes the answer to assumption 11: forced download is a depot operation, not a field or customer one.
 
 **Simplified remaining set for cohort release.** Executor and location per the table above. Estimated two working days of effort, but elapsed time is set by shipment.
 
@@ -301,7 +311,7 @@ Minimum elapsed time is set by X1, not by a calendar. Two transitions at a norma
 
 **Decision rule for the cohort.**
 
-- **S1, S2, S4, S5, S6 and the paper items pass, S3 passes** → release the ICON-controlled ring immediately and customers after the ring has taken the 0909 OTA (already S5). Fused-production work continues in parallel on the full plan.
+- **S1, S2, S4, S5, S6 and the paper items pass, S3 passes** → release the ICON-controlled ring immediately; release the customer units from CVTE's dock after S5 has passed on the ring and the customer units have taken the 0814→0909 OTA at CVTE with logs. Fused-production work continues in parallel on the full plan.
 - **S1, S2, S4, S5, S6 pass, S3 fails, S1 shows ROM command disable unset** → release the ICON-controlled ring; hold customer placement for one written MediaTek answer on BROM entry with a failed preloader on a fused MT8371 (ask 15). Exposure meanwhile is bounded by S2: the OTA cannot write the preloader, so the only unrecoverable mode is boot0 storage failure.
 - **S1 shows ROM command disable set** → no cohort unit to customers. The 100 stay ICON-internal as test and demonstration hardware, and the fuse image is regenerated before any further fusing. This outcome would also explain the two bricks.
 - **S2 shows the preloader in OTA scope** → stop; this is a pipeline change before either the cohort or the unfused MP fleet ships.
@@ -552,6 +562,7 @@ These are needed either to run the plan or to make the Option A / B decision. No
 23. The state of the 100 fused units: which firmware they carry, whether their serials and per-serial fuse read-backs from the factory-test check are already in ICON's hands, whether any have already been shipped or committed to customers, and whether they run the production OTA client and telemetry agent. P1 to P6 assume they are still at CVTE or ICON.
 24. Whether "sufficient test data" has an agreed definition. Section 3.3 proposes X1 to X7; without a signed definition the cohort period has no end and every MP lot ships unfused by default.
 25. Whether the OTA backend can target rings by fuse state and can hold a cohort-first ring ahead of the control group. Without that, the cohort cannot be made the first ring, and the control comparison cannot be run on the same transitions.
+26. **Added r1.12.** Whether the console vendor records the tablet serial against the console serial at integration, and whether that mapping reaches the OTA backend and the service depot. Production tablets flow ODM → console vendor → finished-goods vendor → warehouse or store, so a fused tablet inside a finished console is indistinguishable from an unfused one unless the mapping exists. Also whether CVTE can reach the OTA server to apply the 0814→0909 update to the customer cohort units before shipment, or must use the depot flash path instead.
 
 ---
 
