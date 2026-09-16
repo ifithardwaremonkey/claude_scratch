@@ -27,13 +27,7 @@
 
 - [ ] Open `input.xml` from CVTE. Record the value of every enable switch present. Expected keys per MediaTek Secure Boot Developer Guide V1.1 section 7: `Enable_SBC`, `Enable_DAA`, `Disable_Rom_Cmd`. Record any additional keys verbatim (for example `Disable_JTAG`, `Enable_SW_JTAG_CON`, `SBC_PUBK_HASH` and its value).
 - [ ] Open `GFH_CONFIG.ini`. Record `brom_magic_cmd_mode_permanent_dis`, `jtag_en`, `debug_en`, `sec_level`, and any key containing `dis`, `lock` or `perm`.
-- [ ] Compute the SHA-256 of the raw public key in `root_pubk.der`. Command on the Windows or Linux host:
-
-  ```
-  openssl dgst -sha256 root_pubk.der
-  ```
-
-  If the value does not match the read-back, also try the hash of the modulus alone (MediaTek's `pbp.py` derives `SBC_PUBK_HASH` from the key material; the exact input is stated in the eFuse Writer Developer Guide). Record which form matched.
+- [ ] Compute the SHA-256 of the raw public key in `root_pubk.der` with `openssl dgst -sha256 root_pubk.der`. If the value does not match the read-back, also try the hash of the modulus alone (MediaTek's `pbp.py` derives `SBC_PUBK_HASH` from the key material; the exact input is stated in the eFuse Writer Developer Guide). Record which form matched.
 - [ ] Compare the computed hash to `sbc_pub_key_hash` in Shane's 15 Sep `read-efuse` output and to the hash embedded in `input.xml`.
 - [ ] File both configuration files, the `read-efuse` log and the computed hash in the test record.
 
@@ -65,13 +59,7 @@
 **Checklist**
 
 - [ ] Extract `payload.bin` and `payload_properties.txt` from `VKC1_20260814_20260909.zip`.
-- [ ] List the partitions in the payload manifest. Any AOSP payload dumper works; the manifest is protobuf at the head of `payload.bin`. Example with the AOSP tool:
-
-  ```
-  python3 payload_dumper.py --list payload.bin
-  ```
-
-  If no dumper is available, `strings payload.bin | head -200` shows the partition names in the manifest.
+- [ ] List the partitions in the payload manifest. Any AOSP payload dumper works (for example `python3 payload_dumper.py --list payload.bin`); the manifest is protobuf at the head of `payload.bin`. If no dumper is available, `strings payload.bin | head -200` shows the partition names in the manifest.
 - [ ] Repeat for the full 0909 package from VKC1_20260909.zip if it contains an OTA payload (the factory image set is not an OTA and is out of scope here).
 - [ ] Record every partition name. Mark each as A/B slot partition (boot, system, vendor, product, vbmeta and variants, dtbo, lk, tee, scp, spmfw, and so on) or as boot0 / preloader.
 
