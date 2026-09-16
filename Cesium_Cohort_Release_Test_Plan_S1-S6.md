@@ -63,6 +63,7 @@
 - [ ] List the partitions in the payload manifest. Any AOSP payload dumper works (for example `python3 payload_dumper.py --list payload.bin`); the manifest is protobuf at the head of `payload.bin`. If no dumper is available, `strings payload.bin | head -200` shows the partition names in the manifest.
 - [ ] Repeat for the full 0909 package from VKC1_20260909.zip if it contains an OTA payload (the factory image set is not an OTA and is out of scope here).
 - [ ] Record every partition name. Mark each as A/B slot partition (boot, system, vendor, product, vbmeta and variants, dtbo, lk, tee, scp, spmfw, and so on) or as boot0 / preloader.
+- [ ] Ask CVTE for `AB_OTA_PARTITIONS` from the 0909 board configuration (`BoardConfig.mk` / `device.mk`) and record it. If `preloader` is absent from that list the OTA builder cannot emit a preloader image at all, which is the stronger form of the E1 guarantee. Record whether CVTE describes the Android 15 BSP as a vendor-freeze release.
 
 **Record**
 
