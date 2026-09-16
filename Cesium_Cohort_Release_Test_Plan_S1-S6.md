@@ -233,7 +233,7 @@ These are not tests but the release decision needs them on file.
 
 | S1 | S2 | S3 | S4 | S5 | S6 | Paper | Decision |
 |---|---|---|---|---|---|---|---|
-| Pass | Pass | Pass | Pass | Pass | Pass | Done | Release ICON ring now; customers after the ring is on 0909 (already done by S5) |
+| Pass | Pass | Pass | Pass | Pass | Pass | Done | Release ICON ring now; release customer units from CVTE's dock after they have taken the 0814-to-0909 OTA at CVTE with per-serial logs |
 | Pass | Pass | **Fail** | Pass | Pass | Pass | Done | Release ICON ring; hold customers for MediaTek's answer to ask 15. Exposure meanwhile is boot0 storage failure only, since S2 shows OTA cannot write the preloader |
 | **Fail: ROM cmd disable set** | any | any | any | any | any | any | No cohort unit to customers. The 100 stay ICON-internal. Fuse image regenerated before any further fusing |
 | **Fail: hash mismatch or DAA on** | any | any | any | any | any | any | Stop; escalate to CVTE before any other step |
