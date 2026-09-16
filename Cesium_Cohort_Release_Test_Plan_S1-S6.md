@@ -49,7 +49,9 @@
 | Hash from `read-efuse` | |
 | Hash in `input.xml` | |
 
-**Pass:** `Enable_SBC` true; `Enable_DAA` false; `Disable_Rom_Cmd` false and `brom_magic_cmd_mode_permanent_dis` 0 or absent; ICON-computed hash equals the read-back hash.
+**Cross-check (received 16 Sep).** CVTE's build log for `efuse_iFitG520.img`, dated 27 July 2026, reports `EFUSE_Enable_SBC = 1`, `EFUSE_Enable_DAA = 0`, `EFUSE_Enable_SLA = 0`, `EFUSE_Disable_BROM_CMD = 0`, `EFUSE_Disable_DBGPORT_LOCK = 0`, `EFUSE_USB_download_type = 0`, and states `brom_magic_cmd_mode_permanent_dis` does not exist in the project. The values read from `input.xml` must agree with this log; a disagreement is itself a finding.
+
+**Pass:** `Enable_SBC` true; `Enable_DAA` false; `Disable_Rom_Cmd` (or `Disable_BROM_CMD`) false and `brom_magic_cmd_mode_permanent_dis` 0 or absent; values agree with CVTE's 27 July build log; ICON-computed hash equals the read-back hash.
 
 **Fail:** any of: `Disable_Rom_Cmd` true or `brom_magic_cmd_mode_permanent_dis` 1 (stop: no cohort unit to customers, fuse image must be regenerated); `Enable_DAA` true (stop: recovery requires an AuthFile that does not exist in the depot chain); hash mismatch (stop: the key CVTE sent is not the key that was burned, escalate before anything else).
 
