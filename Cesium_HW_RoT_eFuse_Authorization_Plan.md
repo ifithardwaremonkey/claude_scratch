@@ -9,9 +9,11 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | ~3 Oct 2026 (three weeks from this revision) |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.10 draft, 16 September 2026 (1.0 to 1.7 issued 12 September; 1.8 and 1.9 on 15 September) |
+| Revision | 1.11 draft, 16 September 2026 (1.0 to 1.7 issued 12 September; 1.8 and 1.9 on 15 September; 1.10 earlier on 16 September) |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
+
+**Changes in revision 1.11 (16 September).** Correction of unit geography. The 100 fused units are at CVTE; ICON holds the bricked unit and at most two others. Section 3.4 now assigns each of S1 to S6 an executor and location: S1, S2 at ICON; S3, S4 and S6 at CVTE with video and logs as evidence; S5 at ICON after the ring units ship. CVTE is asked to ship the 15 to 20 ring units and the 7 test units now, on 0814. Elapsed time to the ring release is set by transit, about one week, not by test effort. The standalone test plan header is corrected to match.
 
 **Changes in revision 1.10 (16 September).** CVTE (Simon Huang) supplied the `efuse_iFitG520.img` build log of 27 July 2026: `EFUSE_Enable_SBC = 1`, `EFUSE_Enable_DAA = 0`, `EFUSE_Enable_SLA = 0`, **`EFUSE_Disable_BROM_CMD = 0`**, `EFUSE_Disable_DBGPORT_LOCK = 0`, `EFUSE_USB_download_type = 0`; `brom_magic_cmd_mode_permanent_dis` is not present in the project; configuration is MediaTek default. This closes the S1 ROM-command-disable question by build evidence (the read-back leg remains with ICON) and eliminates conflict 11's first hypothesis. The no-enumeration brick is therefore BootROM behavior on a failed preloader authentication, or an entry-procedure or hardware-path issue, and MediaTek's answer (ask 15, raised by CVTE) decides which. CVTE also confirmed Simon's engineering analysis: download-key detection and the flashing USB handshake both run inside the preloader, so a preloader that fails BROM authentication leaves no preloader-level recovery; CVTE will reproduce ICON's brick on its own fused unit once Shane supplies the method, and attempt BROM recovery per MediaTek's answer. The active decision branch is "S3 fail with ROM command disable unset": ICON ring may be released once S2, S4, S5, S6 and the paper items pass; customer release waits for MediaTek. Confidence level: **Low** (unchanged). The 27 July build-log timestamp also resolves the L5 label question: the fuse image belongs to the 0727 build set.
 
@@ -273,7 +275,19 @@ Minimum elapsed time is set by X1, not by a calendar. Two transitions at a norma
 2. **The BROM command-disable bit.** It is in the `input.xml` and `GFH_CONFIG.ini` ICON now holds (S1). Set, no procedure can reach a fused unit whose preloader is bad.
 3. **Whether the procedure works on a healthy fused unit** (S3). This is the discriminator the plan has asked for since revision 1.2. A healthy unit that enumerates in BROM or preloader mode proves the path exists on this fuse map; a healthy unit that does not proves the map or the procedure is wrong for all 100.
 
-**Simplified remaining set for cohort release.** Everything below is ICON-executable with artifacts in hand. Estimated two working days.
+**Where the units are (corrected 16 Sep).** The 100 fused units are at CVTE. ICON holds the bricked unit from Shane's negative test and at most two other fused units. S1 and S2 are desk work and run at ICON today. S3 to S6 need fused hardware, so they are split by location:
+
+| Step | Executor | Location | How ICON gets evidence |
+|---|---|---|---|
+| S1, S2 | ICON | Logan | Own records |
+| S3 | CVTE first, on a healthy fused unit, with ICON's attempt A/B/C procedure; ICON repeats on its own healthy fused unit if it has one | CVTE (and ICON) | Video of the bus monitor and tool console, VID:PID log, unit serial |
+| S4 | CVTE, same unit, straight after S3 | CVTE | SP Flash Tool console log, before/after `read-efuse` logs |
+| S5 | ICON, on the first shipment of ring units after they arrive | Logan | Own records. Cannot start until units arrive |
+| S6 | CVTE, from the per-serial line logs plus three fresh `read-efuse` runs | CVTE | The 100 per-serial fuse logs (item 4 of the ask) plus three new logs |
+
+**Shipment.** CVTE should ship the ICON-ring units (15 to 20) plus the seven test units (C7) now, on 0814, not reflashed. Transit from CVTE to Logan is roughly one week, so S5 cannot complete before about 25 September regardless of anything else. The remaining 70 to 75 stay at CVTE until the customer-release decision. This replaces "everything below is ICON-executable" in earlier revisions.
+
+**Simplified remaining set for cohort release.** Executor and location per the table above. Estimated two working days of effort, but elapsed time is set by shipment.
 
 | # | Test | Pass | Effort | Gates |
 |---|---|---|---|---|
