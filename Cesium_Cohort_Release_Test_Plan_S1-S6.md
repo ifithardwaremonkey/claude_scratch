@@ -173,6 +173,8 @@
 - [ ] Wait 10 seconds. Reapply 12 V. Record which slot boots and the fingerprint. Expected: the old slot, 0814, boots normally.
 - [ ] Let the update resume or restart. Record whether it resumes from checkpoint or restarts from zero. Complete the update. Confirm 0909 boots with success marker set.
 
+**Unit 4b (optional, if LK or TEE appear in the S2 partition list): power cut during the LK/TEE write.** `update_engine` writes partitions in manifest order; watch the console for the `lk` or `tee` partition name and remove 12 V while it is being written. Expected: identical to unit 4, the old slot boots because the slot switch has not happened. This is the one write whose failure a fused preloader would refuse rather than crash on, and it is the narrowest window in the whole OTA.
+
 **Unit 5: power cut during first boot of the new slot**
 
 - [ ] Trigger the update and let it complete to the reboot. On the first boot of the new slot, remove 12 V after the kernel starts and before Android reaches the home screen (roughly when the boot animation appears).
@@ -219,6 +221,22 @@
 **Fail:** any unit with a different hash or a different fuse map. Stop sampling, read back ten more, and treat the cohort as two populations until CVTE's per-serial line logs explain the difference.
 
 ---
+
+## S7 (recommended, after the seven test units arrive). Randomized power-interruption soak on fused units
+
+**Gates:** D7 in cohort scope; answers the power-loss question directly. **Effort:** about one week unattended. **Units:** the seven test units (CLOSED-1..7), or as many as remain healthy after S3/S4.
+
+**Setup.** Programmable 12 V supply under script control; UART console logging on each unit; a repeatable OTA source that can be re-armed (the 0814→0909 package applied to a unit that is then flashed back to 0814 by the S4 depot path, or two signed builds that can ping-pong between slots).
+
+**Checklist**
+
+- [ ] Script: start OTA, wait a uniformly random interval across the full download-plus-install-plus-first-boot window, cut 12 V for 5 seconds, restore, wait for boot, record outcome and the OTA phase at the cut from the console.
+- [ ] Run 200 cycles spread across the units. Record per cycle: phase at cut, slot before and after, boot attempts, final fingerprint, recoverable yes/no.
+- [ ] Any cycle that does not end in a booting unit: stop that unit, preserve console log, attempt S4 recovery, root-cause before continuing.
+
+**Pass:** zero unrecoverable units over 200 cycles. Failure distribution by phase reported.
+
+**Fail:** any unrecoverable unit. Confidence drops to Not ready until root-caused.
 
 ## Non-test preconditions (paper)
 

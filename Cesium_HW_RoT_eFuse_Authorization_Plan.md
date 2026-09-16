@@ -164,6 +164,26 @@ With Source E in hand the hypothesis is **correct for the A/B update path and fo
 
 **Vendor-freeze background (ICON note, 16 Sep).** MediaTek Android 15 BSPs commonly use a vendor-freeze model in which the framework moves to Android 15 while vendor and bootloader layers stay on the previous release; in that model the preloader is not changed or flashed by OTA. MediaTek can include `preloader.bin` in `payload.bin`, in which case `update_engine` writes the inactive slot before switching. OEMs generally exclude it unless a chip-level fix, DRAM initialization change or anti-rollback version requirement forces it. Two checks settle it for Cesium and both are now in S2 and E1: the partition list in `payload.bin`, and `AB_OTA_PARTITIONS` in the board configuration, which controls whether the OTA builder can ever emit a preloader image.
 
+### 2.4 Random power loss during OTA: what fusing adds (r1.13)
+
+iFIT's internal OTA testing runs under normal conditions. Random power loss is rare on a mains-powered console but it happens, and it is the scenario the brief most fears. This section isolates what fusing changes about it. The answer depends on which partition the write is in when power drops.
+
+| Phase of the OTA when power is lost | What is on disk afterwards | Unfused unit | Fused unit | Delta from fusing |
+|---|---|---|---|---|
+| Download | Partial package in cache; no partition touched | Boots active slot; resumes or restarts download | Same | **None** |
+| Writing Android partitions to the inactive slot (system, vendor, product, boot, dtbo, vbmeta*) | Inactive slot half-written; active slot untouched; slot not yet marked bootable | Boots active slot; update restarts | Same. AVB on the inactive slot is never consulted until it is selected | **None** |
+| Writing **LK or TEE** to the inactive slot (only if they are in the payload) | Inactive LK/TEE half-written; active slot untouched; slot not marked bootable | Boots active slot | Same. Inactive slot not selected | **None**, because the slot switch has not happened |
+| Slot switch written, before first boot of the new slot | Bootloader control block points at new slot; new slot fully written | New slot boots; if LK were somehow bad it would crash and the retry budget falls back | New slot boots; if LK were bad the **preloader refuses it** and the retry budget falls back | **The only real delta.** Refusal versus crash. Both rely on the same slot-fallback mechanism; fusing changes the failure signal, not the path. Tested by S5 unit 5 and by C5/C9 on fused units |
+| First boot of the new slot, before success marker | Same as above | Retry budget, fallback to old slot | Same | **None** |
+| Post-install, userdata migration | A/B partitions complete | Documented data reset at worst | Same | **None** |
+| Preloader / boot0 | **Never written by OTA** (E1, S2, `AB_OTA_PARTITIONS`) | Not reachable | Not reachable | **None.** A power cut cannot create the Section 2.3 brick, because the OTA never opens boot0 for writing |
+
+**Reading it.** The hard-brick mode of Section 2.3 requires a write to boot0. The OTA does not write boot0, so no power-loss event during an OTA can produce it, in either configuration. Every other interruption lands on an A/B partition, and the A/B mechanism does not consult the fuse until the slot is selected. The only point where a fused unit behaves differently is the first boot of a new slot whose LK or TEE is somehow bad: the fused preloader refuses it where an unfused preloader would crash on it. Both outcomes depend on the same boot-control retry and fallback logic, which is fuse-independent and is exactly what S5 unit 5 exercises by cutting power during the first boot up to three times.
+
+**How big is the window.** If LK and TEE are in the payload at all, they are roughly a megabyte each in a package of several hundred megabytes, so a random cut lands during their write well under one percent of the time, and even then the slot is not yet selected. The exposure is not the write; it is the subsequent first boot, which S5 tests directly.
+
+**What this means for the tests.** S5's two cuts (mid-write, first boot) are the minimum. The 200-cycle randomized soak (D7) on fused units is what turns "no difference expected" into a measured rate, and it is automatable with a programmable 12 V supply and a UART console. Recommendation: run D7 on the seven test units once they reach Logan, before customer release rather than before fused production. It takes about a week of unattended cycling and it is the direct answer to the question iFIT is actually asking.
+
 **Conclusion.** If 0909 enforces software RoT, fusing changes nothing about how an OTA is verified or how a slot falls back. It adds one brick mode (preloader), removes every unsigned recovery route, and makes key errors permanent. The financial exposure therefore moves from "unforeseen OTA bug" (bounded by staged rollout regardless of fuse state) to "preloader integrity, key custody, and recovery procedure" (bounded only by E1, E5 and the Group G gates). Source E's own recommendation, software RoT for field trials of 100 to 500 units and hardware RoT for shipping, is the same posture as Option A.
 
 ---
