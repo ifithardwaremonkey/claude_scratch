@@ -12,7 +12,7 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.5, 17 September 2026 (1.4, 1.3 and 1.2 the same day, 1.1 on 16 September, 1.0 on 15 September). v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Revision | 1.6, 18 September 2026 (1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
 | Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 2 October Go/No-Go in the main plan (Option C, the M4 gate). S7 below is the confirmation condition on a Go and must start the day the test units arrive |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
@@ -43,6 +43,22 @@
 
 **Status 17 Sep.** CVTE has demonstrated S3 on a deliberately bricked fused unit (preloader signed to a key that does not match the burned hash) and recovered it. The procedure below is CVTE's, with the three conditions that differ from ICON's failed 15 Sep attempt marked **(condition)**. Shane's own brick method, requested by CVTE, is in S3b.
 
+**Dispositions of the external "v1.6" review (18 Sep).** A separate analysis compared v1.5 with MediaTek Security 2.1 application notes and proposed a rewritten S1 to S7. It was written without the program record, so several of its "critical corrections" would undo decisions this plan made deliberately. Each is dispositioned here so the reasoning is on file.
+
+| Review recommendation | Disposition | Reason |
+|---|---|---|
+| Prohibit "Format all + download" on fused units; use "Download only" or "Firmware Upgrade" | **Partly adopted** | "Format all" is the only BROM recovery demonstrated on this fuse map (Source J). It is not prohibited. The NVRAM and calibration concern is real, so S3b now records what "Format all" erased and ask 30 (does "Download only" also enter from BROM) decides the depot default. On the bricked first article nothing needs preserving |
+| Do not hash the raw `.der`; use `pbp.py` "PSS-padded outputs" | **Adopted in part, wording rejected** | `pbp.py` is now the reference for `SBC_PUBK_HASH` in S1, with the manual hash as the cross-check. PSS is a signature padding scheme, not a hash input; the fuse holds a hash of the public key material in MediaTek's format, which is what `pbp.py` produces |
+| Enforce `Enable_SW_JTAG_CON = 1` alongside SBC and DAA | **Recorded, not enforced** | The cohort is already fused and its map is in the 27 July build log. A new flag means a new fuse image and belongs to the production-image review under G7 and G11, not to the cohort release. S1 records whether the key is present and its value |
+| S1 pass criterion "DAA = 1" | **Rejected** | DAA stays unblown by decision (G11, STOP-SHIP; conflict 8). Blowing DAA makes every download require an AuthFile the depot chain does not have and turns Source E's worst-case recovery into Cesium's. Read-back already shows DAA off |
+| S2 "eFuse programming on 100 units, SP Flash Tool or preloader self-blow, V_BAT above 3.7 V" | **Rejected** | The 100 are already fused. Self-blow is ruled out (Source C, Section 0 item 1). Cesium has no battery. This item shows the review did not have the program state |
+| S4 "flash signed production firmware onto all 100 via Download only" | **Rejected** | The cohort moves 0814 to 0909 by OTA on purpose: it is the first counted fused OTA transition (X1) and the S5 power-cut cases depend on it. Flashing would discard the evidence |
+| S5 "Virtual A/B COW snapshot, `snapshotctl` rollback" | **Not assumed** | Whether Cesium uses virtual A/B is unconfirmed (conflict 2, M2 and M3). S5 is written to be correct for plain A/B or virtual A/B |
+| S6 "UART audit of all 100 units during S5, `efuse blow: success`" | **Adopted as supplementary evidence** | The preloader log line that matters is `hw sbc: 1` and the signature-check pass (Source I). It is captured on every unit that has a UART lead attached (S5 units 4 and 5, S3b, S7) and filed with the read-back. It does not replace `read-efuse` sampling: UART needs the enclosure open on each unit and the 100 are at CVTE |
+| S7 relay harness and PWR-01 to PWR-04 targeted cuts | **Adopted** | Programmable relay control was already the S7 setup. The four targeted phases from Source A are added as a structured subset within the 200-cycle random soak, so both the specific windows and the random distribution are covered |
+| "Total execution time 3.5 hours" | **Rejected** | One 436 MB OTA is tens of minutes per unit; 200 soak cycles are about a week unattended; S7 is the confirmation condition on the 2 October decision precisely because it takes that long. A release plan sized to 3.5 hours has removed the test that measures brick risk |
+| Release on "100 percent pass across S1 to S7" | **Not adopted** | The release decision table below is the rule: S3 and S3b outcomes do not gate the cohort release, S7 gates the fusing Go, and each failure mode has its own consequence |
+
 **Global record per unit.** Serial, board revision, firmware fingerprint before and after, tester, date, tool and driver versions, console log file name, photos where the step says so.
 
 ---
@@ -55,7 +71,7 @@
 
 - [ ] Open `input.xml` from CVTE. Record the value of every enable switch present. Expected keys per MediaTek Secure Boot Developer Guide V1.1 section 7: `Enable_SBC`, `Enable_DAA`, `Disable_Rom_Cmd`. Record any additional keys verbatim (for example `Disable_JTAG`, `Enable_SW_JTAG_CON`, `SBC_PUBK_HASH` and its value).
 - [ ] Open `GFH_CONFIG.ini`. Record `brom_magic_cmd_mode_permanent_dis`, `jtag_en`, `debug_en`, `sec_level`, and any key containing `dis`, `lock` or `perm`.
-- [ ] Compute the SHA-256 of the raw public key in `root_pubk.der` with `openssl dgst -sha256 root_pubk.der`. If the value does not match the read-back, also try the hash of the modulus alone (MediaTek's `pbp.py` derives `SBC_PUBK_HASH` from the key material; the exact input is stated in the eFuse Writer Developer Guide). Record which form matched.
+- [ ] **Reference method (v1.6):** run MediaTek's `pbp.py` from the eFuse Writer package against `root_pubk.der` and record the `SBC_PUBK_HASH` it emits. This is the value the fuse image was built from. **Cross-check:** compute `openssl dgst -sha256 root_pubk.der` and, if that does not match, the SHA-256 of the modulus alone; record which form equals the `pbp.py` output so the derivation is documented for Malata and the depot. If `pbp.py` is not available at ICON, ask CVTE to run it and send the output with the command line.
 - [ ] Compare the computed hash to `sbc_pub_key_hash` in Shane's 15 Sep `read-efuse` output and to the hash embedded in `input.xml`.
 - [ ] File both configuration files, the `read-efuse` log and the computed hash in the test record.
 
@@ -68,6 +84,7 @@
 | `Disable_Rom_Cmd` | |
 | `brom_magic_cmd_mode_permanent_dis` | |
 | `jtag_en` / `debug_en` | |
+| `Enable_SW_JTAG_CON` (present? value) | |
 | Hash computed by ICON | |
 | Hash from `read-efuse` | |
 | Hash in `input.xml` | |
@@ -160,11 +177,11 @@
 **Checklist**
 
 - [ ] Open the enclosure and locate Force Flash per the S3 photo. Check the switch with a meter: it must pull the line low when pressed and the contact must hold (a worn tact switch that bounces open during the BROM sample is a plausible cause of the 15 Sep result).
-- [ ] SP Flash Tool V6, `flash.xml` from `VKC1_20260909.zip`, signed `DA_BR.bin`, connection USB, scene **Format all + download**. Note this erases userdata; nothing on the first article needs preserving. Confirm every image in the scene is the signed 0909 set, since BROM will verify the DA and the new preloader against the burned hash.
+- [ ] SP Flash Tool V6, `flash.xml` from `VKC1_20260909.zip`, signed `DA_BR.bin`, connection USB, scene **Format all + download**, exactly as CVTE demonstrated. Note this erases userdata and may erase NVRAM or calibration data; nothing on the first article needs preserving, but **record which partitions the scene formatted** (tool log) so the depot knows the cost of this path. **v1.6:** do not substitute "Download only" on the bricked unit until CVTE answers ask 30; the proven procedure comes first. If ask 30 confirms "Download only" also enters from BROM, it becomes the depot default and "Format all" the fallback. Confirm every image in the scene is the signed 0909 set, since BROM will verify the DA and the new preloader against the burned hash.
 - [ ] Click **Download** so the tool is listening. Start the USB bus monitor. Connect the cable. 12 V off.
 - [ ] Press and hold Force Flash. Apply 12 V while holding. Keep holding until the tool reports a device or 60 seconds pass. Record the time from 12 V to first enumeration and the VID:PID.
 - [ ] Let the download run to "Download Ok". Record the console log in full.
-- [ ] Power-cycle. Confirm boot to Android and record `ro.build.fingerprint` (expected VKC1_20260909), `ro.boot.verifiedbootstate`, `ro.boot.veritymode`.
+- [ ] Power-cycle. Confirm boot to Android and record `ro.build.fingerprint` (expected VKC1_20260909), `ro.boot.verifiedbootstate`, `ro.boot.veritymode`. **v1.6:** with the UART lead attached, capture the preloader boot log and file the `hw sbc: 1` and signature-check lines as corroboration of the fuse state.
 - [ ] `read-efuse`. Compare to the 8 Sep read-back: `sbc_en` on, hash `6da1756f…83730c68`, DAA, SLA, JTAG-disable off. A flash must never alter fuse state.
 - [ ] If no enumeration after two attempts: photograph the setup, capture the bus-monitor log, and try once with a different cable and a USB 2.0 port on a different host. Then stop and send CVTE the logs with ask 31; do not proceed to the eMMC test point without CVTE's board guidance (ask 24).
 
@@ -229,7 +246,7 @@
 
 - [ ] Record the fingerprint and active slot (`bootctl get-current-slot` via adb if enabled on the user build, otherwise from the boot console) for all five.
 - [ ] Stage `VKC1_20260814_20260909.zip` on the OTA server ring reserved for the cohort, or sideload it via recovery if the backend is not ready. Record which path was used; it must be the same path the MP fleet will use for X2 to be meaningful later.
-- [ ] Attach the UART console to the two interruption units. Use the switchable 12 V supply for those two.
+- [ ] Attach the UART console to the two interruption units. Use the switchable 12 V supply for those two. **v1.6:** where a programmable relay is available, script the two cuts (install progress 40 to 60 percent; first boot after kernel start) instead of pulling the cable, and log the cut timestamp against the console. Capture the preloader `hw sbc: 1` line on each reboot as supplementary fuse evidence.
 
 **Units 1 to 3: clean update**
 
@@ -296,12 +313,21 @@
 
 **Gates:** D7 in cohort scope; answers the power-loss question directly. **v1.5: S7 is the confirmation condition on a 2 October Go for fusing lot 1.** It is the one test that measures brick risk after the M4 gate. Units arrive about 25 September; 200 cycles take about a week; result due about 5 October, before the line runs. Zero unrecoverable confirms the Go. Any unrecoverable unit converts it to No-Go and lot 1 ships unfused. **Effort:** about one week unattended. **Units:** the seven test units (CLOSED-1..7), or as many as remain healthy after S3/S4.
 
-**Setup.** Programmable 12 V supply under script control; UART console logging on each unit; a repeatable OTA source that can be re-armed (the 0814→0909 package applied to a unit that is then flashed back to 0814 by the S4 depot path, or two signed builds that can ping-pong between slots).
+**Setup.** Programmable 12 V supply or relay harness under script control; UART console logging on each unit; a repeatable OTA source that can be re-armed (the 0814→0909 package applied to a unit that is then flashed back to 0814 by the S4 depot path, or two signed builds that can ping-pong between slots).
+
+**Structure (v1.6).** The 200 cycles are split: 160 with the cut at a uniformly random point across download, install and first boot, and 40 targeted at the four windows from the A/B resiliency plan (Source A), ten each. The targeted set proves the specific windows; the random set measures the distribution.
+
+| ID | Window | Cut | Expected |
+|---|---|---|---|
+| PWR-01 | Early boot, preloader and LK, first 500 ms after 12 V | During bootloader handshake | Restarts cleanly; active slot retained |
+| PWR-02 | Payload write to the inactive slot (or COW snapshot if virtual A/B) | During `update_engine` write | Update aborts or resumes; active slot boots; no data corruption |
+| PWR-03 | Slot-switch commit | During the boot-control flag update | Atomic metadata write; boots a known-good slot, never an ambiguous state |
+| PWR-04 | First boot of the new slot | Before `boot_completed` | Retry budget, then fallback to the old slot; on Cesium the AVB rollback index is 0 and inert, so this is a retry-budget test, not a rollback-index test |
 
 **Checklist**
 
 - [ ] Script: start OTA, wait a uniformly random interval across the full download-plus-install-plus-first-boot window, cut 12 V for 5 seconds, restore, wait for boot, record outcome and the OTA phase at the cut from the console.
-- [ ] Run 200 cycles spread across the units. Record per cycle: phase at cut, slot before and after, boot attempts, final fingerprint, recoverable yes/no.
+- [ ] Run 200 cycles spread across the units: 160 random, 40 targeted (PWR-01 to PWR-04, ten each). Record per cycle: phase at cut, slot before and after, boot attempts, final fingerprint, preloader `hw sbc: 1` seen, recoverable yes/no.
 - [ ] Any cycle that does not end in a booting unit: stop that unit, preserve console log, attempt S4 recovery, root-cause before continuing.
 
 **Pass:** zero unrecoverable units over 200 cycles. Failure distribution by phase reported.
