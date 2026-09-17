@@ -10,9 +10,9 @@
 | Hold point | The customer cohort units are held at CVTE's outbound dock until the release decision below is signed. Once they enter the console vendor's flow they cannot be segregated by serial. The console vendor must record tablet serial against console serial at integration |
 | Artifacts required | `input.xml`, `GFH_CONFIG.ini`, `root_pubk.der` (CVTE, 14 Sep); VKC1_20260909.zip containing signed `DA_BR.bin` and signed 0909 image; `VKC1_20260814_20260909.zip` OTA package; SP_Flash_Tool_Selector v1.2444 (use V6) with MediaTek USB VCOM drivers |
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
-| Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: ICON, on the ring units after they ship (about one week transit). S6: CVTE, from the per-serial line logs plus three fresh read-backs. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814 |
+| Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.2, 17 September 2026 (1.1 on 16 September, 1.0 on 15 September). v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added for the bricked first article |
+| Revision | 1.3, 17 September 2026 (1.2 and 1.1 on 16 to 17 September, 1.0 on 15 September). v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added for the bricked first article |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
 
@@ -195,6 +195,10 @@
 ## S5. First cohort OTA transition with power interruption
 
 **Gates:** X1 first transition, D2 and D4 in cohort scope, P6. **Effort:** 1 day. **Units:** five healthy cohort units on VKC1_20260814. Two of the five are the interruption units.
+
+**Executor (v1.3).** CVTE runs S5 first, at CVTE, now. Evidence to send ICON: `update_engine` log per serial, UART console capture on units 4 and 5 through the cut and the reboot, fingerprint before and after for all five, and video of the two power cuts showing the progress indication at the moment of the cut. ICON accepts a CVTE pass as the S5 result for the customer-release decision. ICON repeats S5 on five ring units when they arrive in Logan, as the independent check; the repeat feeds X2 and the confidence level, not the release. Where a step below says "trigger the update", CVTE uses the iFIT OTA server from its lab, which it can reach; sideload is the fallback and must be recorded if used.
+
+**Malata (v1.3, for information).** Malata is not asked to run S5 or S7. Malata's early-start items are in the main plan Tier 2 (ME1 to ME4): controlled receipt of the fuse image and DA, three to five sacrificial units fused and read back, an independent brick-and-recover using Shane's method and CVTE's Force Flash procedure, and the unfused factory-test profile.
 
 **Setup checklist**
 
