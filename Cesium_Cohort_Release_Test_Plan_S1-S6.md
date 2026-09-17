@@ -12,8 +12,8 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.4, 17 September 2026 (1.3 and 1.2 the same day, 1.1 on 16 September, 1.0 on 15 September). v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
-| Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 10 October Go/No-Go in the main plan (Option C), and MP is 15 October |
+| Revision | 1.5, 17 September 2026 (1.4, 1.3 and 1.2 the same day, 1.1 on 16 September, 1.0 on 15 September). v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 2 October Go/No-Go in the main plan (Option C, the M4 gate). S7 below is the confirmation condition on a Go and must start the day the test units arrive |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
 
@@ -32,11 +32,12 @@
 | Simon 9: MTK_SEC_BOOT, LK lock state | Feeds A0-b (ask 13) | Unfused fleet |
 | Simon 10: AB_OTA_PARTITIONS, vendor-freeze | Feeds S2 (ask 27) | E1 |
 | Simon 11: OTA the customer units, hold at dock | Release step after S5 | Cohort release |
+| Simon 12: video-witnessed fuse-station run, week of 22 Sep | Main plan Tier 1, L1 to L8 and I1 to I6 | Fusing Go/No-Go (Medium) |
 | Shane 1: recover the bricked first article | **S3b** | E5, X3, confidence |
 | Shane 2: fuse files and hash | **S1** | Cohort release |
 | Shane 3: payload partition list | **S2** | Cohort release |
 | Shane 4: unfused 0909 checks | **A0-b** (paper section) | Unfused fleet |
-| Shane 5: ring placement, S5 repeat, soak, US depot | S5 repeat, **S7**, H1 | Confidence, X2 |
+| Shane 5: ring placement, S5 repeat, soak, US depot | S5 repeat, **S7**, H1 | S7 confirms the 2 Oct Go; X2 |
 | Malata 1 to 4: unfused profile, experience, sacrificial units, channel | Main plan Tier 2, ME1 and ME4 | Malata line |
 | Malata 5 to 7: fuse, read back, brick and recover, boot | Main plan Tier 2, ME2 and ME3 | Malata line |
 
@@ -291,9 +292,9 @@
 
 ---
 
-## S7 (recommended, after the seven test units arrive). Randomized power-interruption soak on fused units
+## S7 (required, starts the day the seven test units arrive). Randomized power-interruption soak on fused units
 
-**Gates:** D7 in cohort scope; answers the power-loss question directly. **Effort:** about one week unattended. **Units:** the seven test units (CLOSED-1..7), or as many as remain healthy after S3/S4.
+**Gates:** D7 in cohort scope; answers the power-loss question directly. **v1.5: S7 is the confirmation condition on a 2 October Go for fusing lot 1.** It is the one test that measures brick risk after the M4 gate. Units arrive about 25 September; 200 cycles take about a week; result due about 5 October, before the line runs. Zero unrecoverable confirms the Go. Any unrecoverable unit converts it to No-Go and lot 1 ships unfused. **Effort:** about one week unattended. **Units:** the seven test units (CLOSED-1..7), or as many as remain healthy after S3/S4.
 
 **Setup.** Programmable 12 V supply under script control; UART console logging on each unit; a repeatable OTA source that can be re-armed (the 0814→0909 package applied to a unit that is then flashed back to 0814 by the S4 depot path, or two signed builds that can ping-pong between slots).
 

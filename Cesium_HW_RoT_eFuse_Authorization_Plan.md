@@ -7,9 +7,9 @@
 | Product | Cesium tablet (iFitG520), MediaTek MT8371 / Genio 520 (tool reports MT8189), AOSP 15, A/B seamless update, battery-less console |
 | Current build | VKC1_20260909 (software root of trust, fingerprint `:user/dev-keys`) |
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
-| Mass production | Committed 2 Oct 2026; likely build date 15 Oct 2026 because 2 Oct is a holiday (CVTE, 17 Sep). Fusing Go/No-Go for lot 1 on 10 Oct (Section 3.1, Option C) |
+| Mass production | Committed 2 Oct 2026; likely build date 15 Oct 2026 because 2 Oct is a holiday (CVTE, 17 Sep). Fusing Go/No-Go for lot 1 on 2 Oct, the original M4 gate date, subject to S7 (Section 3.1, Option C). The build date is internal to iFIT and CVTE and is not shared with Malata |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.17 draft, 17 September 2026. Full history in Section 10 |
+| Revision | 1.18 draft, 17 September 2026. Full history in Section 10 |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
 
@@ -41,7 +41,7 @@ Those four are controlled by gates, custody and rehearsal before the first unit 
 
 Two consequences are accepted with this posture. Every unfused MP unit is permanently unfused. And every unfused MP unit must carry an `ATTR_SBOOT_ENABLE` preloader (A0-b), or the bulk of production ships with no boot-chain signature enforcement at all.
 
-**r1.17 amendment: lot 1 may fuse if confidence reaches Medium by 10 October.** The MP build date has moved to 15 October (holiday on 2 October), which puts it inside the window where a bounded fused lot can be authorized, and CVTE states that removing the closed configuration now would itself delay MP. The posture becomes Option C in Section 3.1: a Go/No-Go on 10 October decides whether lot 1 fuses, against the Medium criteria of Section 3.5 plus an OTA freeze on fused serials until the rollout controls J1 to J4 are demonstrated. If Medium is not reached, lot 1 ships unfused on a profile CVTE prepares now as the fallback. Either way MP does not slip again. Full authorization for all production and for Malata remains at High.
+**r1.17 amendment (dates revised r1.18): lot 1 may fuse if confidence reaches Medium by 2 October.** The MP build date has moved to 15 October (holiday on 2 October), which puts it inside the window where a bounded fused lot can be authorized, and CVTE states that removing the closed configuration now would itself delay MP. The posture becomes Option C in Section 3.1: a Go/No-Go on 2 October, the original M4 gate date, decides whether lot 1 fuses, against the Medium criteria of Section 3.5 plus an OTA freeze on fused serials until the rollout controls J1 to J4 are demonstrated. A Go is recorded as "Go, subject to S7": the 200-cycle randomized power-loss soak on the test units in Logan, which starts on their arrival about 25 September and completes about 5 October, must end with zero unrecoverable units before the line fuses on 15 October. Any unrecoverable unit converts the Go to a No-Go. S7 is the one test that adds measurable brick-risk evidence after the M4 gate, so it is attached as a confirmation rather than used as a reason to slip the gate. If Medium is not reached, lot 1 ships unfused on a profile CVTE prepares now as the fallback. Either way MP does not slip again. Full authorization for all production and for Malata remains at High.
 
 **iFIT's stated acceptance criterion (17 Sep).** Fused Cesium must not fail in the field at a rate materially above the previous generation, Xenon (AOSP 13, unsigned images, no software root of trust). Section 2 answers this by mechanism: the OTA path is identical fused or unfused; the one new brick mode needs a boot0 write the OTA never makes, or a boot0 storage failure that bricks a Xenon too, and it is now depot-recoverable (Source J); software failures of the EMM-APK kind dominate Xenon's real RMA rate and are identical on both. What the 100-unit cohort cannot do is prove parity statistically before 15 October: it bounds the fused brick rate near 1.5 percent, and Xenon's true no-boot rate is almost certainly far below that. Parity in data comes from lot 1's telemetry under rings and a kill switch, which is what "bounded lot" means. Two numbers are now required and are added to Section 7: Xenon's field no-boot RMA rate, and the size of lot 1.
 
@@ -203,7 +203,7 @@ iFIT's internal OTA testing runs under normal conditions. Random power loss is r
 
 | | Option A (posture 12 Sep to 16 Sep) | Option B (withdrawn) | **Option C (active from 17 Sep)** |
 |---|---|---|---|
-| MP lot 1 | Software RoT, plus 25–50 unit fused pilot ring built by the MP-intent line process and placed at ICON-controlled sites | All units fused | **Decided on 10 Oct.** Fused if confidence is Medium (Section 3.5) on that date; otherwise unfused on the fallback profile CVTE prepares now |
+| MP lot 1 | Software RoT, plus 25–50 unit fused pilot ring built by the MP-intent line process and placed at ICON-controlled sites | All units fused | **Decided on 2 Oct (M4 gate), subject to S7 by about 5 Oct.** Fused if confidence is Medium (Section 3.5) on that date and S7 ends with zero unrecoverable; otherwise unfused on the fallback profile CVTE prepares now |
 | Fusing authorization for CVTE production | First lot after Tier 0 + Tier 1 pass **and** pilot soak (K1–K3) completes | Day 18, if every Tier 0 STOP-SHIP and Tier 1 gate has passed | Lot 1 only, as the bounded lot. All subsequent lots at High |
 | Compensating control | None needed; fused population is the pilot | **OTA freeze on fused serials until Tier 3 passes.** Backend must be able to target by fuse state (J4 telemetry). | **OTA freeze on fused serials until J1 to J4 are demonstrated**, fuse state per serial in the backend, US depot ready with the Force Flash procedure, staged rings for the first fused OTA |
 | Field exposure | Zero fused units in customer hands until proven | Full fused lot in customer hands with no proven fused OTA history; exposure bounded only by the OTA freeze and then by ring sizes | One lot of fused units in customer hands, shipped on 0909, receiving no OTA until the pipeline has shown it can halt a bad one. The cohort's first transition (S5, roughly 80 logged fused OTAs) precedes it |
@@ -213,7 +213,7 @@ iFIT's internal OTA testing runs under normal conditions. Random power loss is r
 
 Because fusing is a line step and not a design change, deferring it costs one lot of security posture but no hardware. Fusing prematurely cannot be undone on any unit already shipped. Option C is acceptable only because three things changed between 12 and 17 September: the recovery path was demonstrated (Source J), the fuse map was confirmed by build log and read-back (Sources H and I), and the MP date moved into the window where the Medium criteria can be met. The Go/No-Go is read off Section 3.5, not argued on the day.
 
-**CVTE's schedule objection (17 Sep).** CVTE states that removing the closed-configuration requirement now would delay MP. Shipping unfused omits a line step, so the delay can only come from the factory test that hard-fails unfused units (CVTE said on 14 Sep it is configurable), the firmware-generation gate on the fuse-image hash, or labeling and backend records for a mixed fleet. CVTE is asked to name the change and the days it costs (Basecamp, 17 Sep). Whatever the answer, the unfused profile must exist before 10 October so that a No-Go is not a second slip.
+**CVTE's schedule objection (17 Sep).** CVTE states that removing the closed-configuration requirement now would delay MP. Shipping unfused omits a line step, so the delay can only come from the factory test that hard-fails unfused units (CVTE said on 14 Sep it is configurable), the firmware-generation gate on the fuse-image hash, or labeling and backend records for a mixed fleet. CVTE is asked to name the change and the days it costs (Basecamp, 17 Sep). Whatever the answer, the unfused profile must exist before 2 October so that a No-Go is not a second slip.
 
 ### 3.2 Three-week schedule to MP
 
@@ -238,12 +238,15 @@ Because fusing is a line step and not a design change, deferring it costs one lo
 |---|---|---|
 | 18 to 20 Sep | S3b, S1, S2, A0-b at ICON. S5, S4, S6 and the recovery-thread items at CVTE | Shane, Simon |
 | by 26 Sep | Cohort release signed if all pass. Ring and test units in Logan. Customer units OTA'd to 0909 at CVTE and released from the dock | Allen |
-| 26 Sep to 9 Oct | G3 key custody signed and keys off Basecamp; J1 to J3 demonstrated on a bad build in a lab ring; L1 to L8 and I1 to I6 witnessed at CVTE; ICON S5 repeat and S7 on the Logan units; US depot rehearsal (H1); Malata ME1 to ME4 | iFIT, CVTE, Malata |
-| **10 Oct** | **Go/No-Go: fuse lot 1 (Medium reached, OTA freeze in place) or ship it unfused on the fallback profile** | Allen, sign-off per Section 3.5 |
-| 15 Oct | MP build | CVTE |
+| 22 to 24 Sep | G3 and G11 signed, keys off Basecamp | iFIT |
+| 22 to 26 Sep | L1 to L8 and I1 to I6 witnessed at CVTE on video with logs (Basecamp item 12 to Simon); J1 to J3 demonstrated on a bad build in a lab ring; Malata ME1 to ME4 start | Simon, iFIT release engineering, Malata |
+| about 25 Sep | Ring and test units arrive in Logan. ICON S5 repeat; **S7 starts the same day**; US depot rehearsal (H1) | Shane |
+| **2 Oct** | **Go/No-Go on fusing lot 1 (M4 gate): Medium reached, OTA freeze in place, or ship it unfused on the fallback profile. A Go is "Go, subject to S7"** | Allen, sign-off per Section 3.5 |
+| about 5 Oct | S7 complete. Zero unrecoverable confirms the Go; any unrecoverable unit converts it to No-Go and lot 1 ships unfused | Shane, Allen |
+| 15 Oct | MP build (internal date, not shared with Malata) | CVTE |
 | Nov to Dec | Second cohort OTA (X1), control comparison (X2), two depot recoveries (X4), G1, G5, G6, G8 to G10; then full authorization at High and Malata's first fused lot | All |
 
-The critical path to 10 October is iFIT's, not CVTE's: G3 and J1 to J3. If either cannot finish by 10 October, the decision is made now to ship lot 1 unfused, rather than discovered on 9 October.
+The critical path to 2 October is iFIT's, not CVTE's: G3 signed and J1 to J3 demonstrated, both in the week of 22 September. Every hardware test Medium requires is complete by about 20 September; what follows is paperwork and a line witness, not data. The one question to settle this week is whether the OTA backend already does staged rings with an automatic halt. If it has to be built, the 2 October answer is No-Go regardless of the tests, and that should be decided now rather than discovered at the gate.
 
 With 0909 confirmed as the release candidate, the schedule no longer waits on a new build; the only re-test trigger is a re-signed artifact from the G1 or K0 decisions. With Option B withdrawn, the Day 18 decision is narrower: it authorizes release of the fused cohort to the field and confirms the unfused MP configuration (A0-b), not fusing of production.
 
@@ -522,7 +525,7 @@ Cost: three to five permanently fused sacrificial units and an earlier controlle
 | K1–K3 | 30-day fused pilot, at least two full OTA transitions, two random depot recoveries, zero unrecoverable |
 | F1 on 0909 | Signed older build flashes and boots on a fused unit: the fleet escape hatch is proven on the shipping build |
 
-Until Tier 3 passes, fused units in the field receive no OTA. This is the control that makes Option B tolerable and it costs nothing under Option A. **Under Option C (r1.17) it is a condition of the 10 October Go: J1 to J4 demonstrated before lot 1 ships, or the fused lot receives no OTA until they are.** The cohort is exempt once released, because its units are on 0909 and its first field OTA is the same MP release the control group takes, under whatever rings exist then.
+Until Tier 3 passes, fused units in the field receive no OTA. This is the control that makes Option B tolerable and it costs nothing under Option A. **Under Option C (r1.17) it is a condition of the 2 October Go: J1 to J4 demonstrated before lot 1 ships, or the fused lot receives no OTA until they are.** The cohort is exempt once released, because its units are on 0909 and its first field OTA is the same MP release the control group takes, under whatever rings exist then.
 
 ---
 
@@ -632,7 +635,7 @@ These are needed either to run the plan or to make the Option A / B decision. No
 1. **Partly closed r1.6**: 100,000 tablets in the field at $170 per tablet. Still needed: the true cost of a field replacement on an installed console (service call, shipping, swap), the depot recovery cost per unit, warranty terms, and the planned OTA cadence. Section 6.3 uses $50 placeholders for the first two.
 2. Whether Cesium ships into the EU and whether the EN 18031 assessment accepts a software root of trust. Xenon passed NIST 8259 with software RoT. If the compliance body requires hardware RoT, Option A's "permanently open lot 1" has a compliance cost, not only a security-posture cost.
 3. The threat model the fuse is meant to close. For a kiosk fitness console, physical-access OS replacement, content and DRM, and brand protection are different threats. Remote threats are already covered by signed OTA on the open configuration. This decides whether shipping any unit unfused is acceptable.
-4. Who signs the fuse authorization for CVTE and for Malata, and whether the MP line can start unfused and switch to fused mid-lot. If it can, the "three weeks" deadline applies to the line start and not to the fusing decision, which relieves the schedule considerably. **Partly closed r1.17: the build date is 15 Oct and the fuse decision is 10 Oct, so the question of switching mid-lot is moot for lot 1. Still needed: who signs. See also assumptions 27 and 28.**
+4. Who signs the fuse authorization for CVTE and for Malata, and whether the MP line can start unfused and switch to fused mid-lot. If it can, the "three weeks" deadline applies to the line start and not to the fusing decision, which relieves the schedule considerably. **Partly closed r1.17: the build date is 15 Oct and the fuse decision is 2 Oct, so the question of switching mid-lot is moot for lot 1. Still needed: who signs. See also assumptions 27 and 28.**
 
 **Keys and artifacts**
 
@@ -666,7 +669,7 @@ These are needed either to run the plan or to make the Option A / B decision. No
 26. **Added r1.12, closed 16 Sep.** The console vendor captures the tablet serial at integration, so the tablet-to-console mapping exists and P5 (backend records with fuse state per serial) is achievable; what remains is confirming the mapping reaches the OTA backend and the depot. CVTE's lab can reach the iFIT OTA server, so the customer cohort units take the 0814→0909 update by OTA at CVTE, not by depot flash; the fallback is withdrawn. Note the OTA runs in CVTE's lab, not on the production floor, so the 70 to 75 units move lab-side for the update and return to the dock hold.
 27. **(Added r1.17) Xenon's field no-boot RMA rate**, per thousand units per year, from the AOSP 13 fleet. This is the baseline iFIT's acceptance criterion refers to. Without it, "not materially higher than Xenon" has no number and the bounded-lot telemetry (X2) has nothing to compare against.
 28. **(Added r1.17) The size of lot 1** and the number of units in the first fused OTA ring. These set the exposure of the bounded lot under Option C and the statistical power of the parity comparison.
-29. **(Added r1.17) What CVTE must change on the line to ship unfused**, and how many days it costs. CVTE claims a delay; the plan requires the unfused profile to exist before 10 October regardless.
+29. **(Added r1.17) What CVTE must change on the line to ship unfused**, and how many days it costs. CVTE claims a delay; the plan requires the unfused profile to exist before 2 October regardless.
 
 ---
 
@@ -746,6 +749,8 @@ Plan B section 7 questions 1–16 are carried forward unchanged and should be se
 ## 10. Revision history
 
 Newest first. Each entry records what changed and the evidence that drove it.
+
+**Changes in revision 1.18 (17 September, night).** Decision date moved from 10 October back to 2 October, the original M4 gate date, at iFIT's direction: management commitment to the gate is kept, and the eight days between 2 and 10 October contained no test that measures brick risk, only paperwork and the line witness. S7, the 200-cycle randomized power-loss soak, is the one measurable brick-risk item that completes after the gate, so a Go is recorded as "Go, subject to S7" and confirmed or converted around 5 October, ten days before the line runs. Calendar in Section 3.2 rewritten with owners; the week of 22 September now carries G3, G11, the CVTE line witness on video (Basecamp item 12) and the J1 to J3 demonstration. The 15 October build date is internal to iFIT and CVTE and is not shared with Malata, whose production follows CVTE's. Test plan v1.5 issued alongside.
 
 **Changes in revision 1.17 (17 September, evening).** Program posture amended to Option C. CVTE reports the MP build date has moved from 2 October (holiday) to 15 October, and objects that removing the closed configuration now would delay MP. iFIT's acceptance criterion is stated: fused Cesium must not fail in the field materially above Xenon (AOSP 13, unsigned). Section 3.1 adds Option C: Go/No-Go on 10 October for fusing lot 1 against the Medium criteria of Section 3.5, with an OTA freeze on fused serials until J1 to J4 are demonstrated; a No-Go ships lot 1 unfused on a fallback profile CVTE prepares now; MP does not slip either way. Section 3.2 gains a dated calendar to 10 and 15 October and names the critical path as iFIT's G3 and J1 to J3. Section 0 records the criterion and why the cohort cannot prove parity statistically before MP. Assumptions 27 to 29 added: Xenon's no-boot RMA baseline, lot 1 size, and CVTE's specific unfused-line change. The 17 September Basecamp post to CVTE, iFIT and Malata is the action record for Simon's items 1 to 11, Shane's 1 to 5 and Malata's 1 to 7; the test plan v1.4 carries the cross-reference.
 
