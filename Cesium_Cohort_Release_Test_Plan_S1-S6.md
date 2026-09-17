@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.19. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.20. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -12,7 +12,7 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.6, 18 September 2026 (1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Revision | 1.7, 18 September 2026 (1.6 earlier on 18 September; 1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.7: consequences of main plan r1.20 (MediaTek eFuse Writer Developer Guide V1.1 and Flashtool guide, Sources L and M): S1 records `key_type`, the hash slot, lock bits and `Enable_SW_JTAG_CON` against `efuse_bingen.log`; S3b and S4 record the SP Flash Tool scene and its NVRAM effect and enable "DL All with CheckSum" where `checksum.ini` exists; three dispositions of the external review revised. v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
 | Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 2 October Go/No-Go in the main plan (Option C, the M4 gate). S7 below is the confirmation condition on a Go and must start the day the test units arrive |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
@@ -47,9 +47,9 @@
 
 | Review recommendation | Disposition | Reason |
 |---|---|---|
-| Prohibit "Format all + download" on fused units; use "Download only" or "Firmware Upgrade" | **Partly adopted** | "Format all" is the only BROM recovery demonstrated on this fuse map (Source J). It is not prohibited. The NVRAM and calibration concern is real, so S3b now records what "Format all" erased and ask 30 (does "Download only" also enter from BROM) decides the depot default. On the bricked first article nothing needs preserving |
-| Do not hash the raw `.der`; use `pbp.py` "PSS-padded outputs" | **Adopted in part, wording rejected** | `pbp.py` is now the reference for `SBC_PUBK_HASH` in S1, with the manual hash as the cross-check. PSS is a signature padding scheme, not a hash input; the fuse holds a hash of the public key material in MediaTek's format, which is what `pbp.py` produces |
-| Enforce `Enable_SW_JTAG_CON = 1` alongside SBC and DAA | **Recorded, not enforced** | The cohort is already fused and its map is in the 27 July build log. A new flag means a new fuse image and belongs to the production-image review under G7 and G11, not to the cohort release. S1 records whether the key is present and its value |
+| Prohibit "Format all + download" on fused units; use "Download only" or "Firmware Upgrade" | **Partly adopted; strengthened v1.7** | "Format all" is the only BROM recovery demonstrated on this fuse map (Source J). It is not prohibited. The NVRAM and calibration concern is real, so S3b now records what "Format all" erased and ask 30 (does "Download only" also enter from BROM) decides the depot default. On the bricked first article nothing needs preserving. v1.7: the Flashtool guide (Source M) confirms "Format All" erases the NVRAM region and "Firmware Upgrade" restores it only from an ATE or SN Writer backup. S3b and S4 now record the scene used and check calibration afterwards; the depot preference order is in main plan H1. |
+| Do not hash the raw `.der`; use `pbp.py` "PSS-padded outputs" | **Adopted in part, wording softened v1.7** | `pbp.py` is now the reference for `SBC_PUBK_HASH` in S1, with the manual hash as the cross-check. PSS is a signature padding scheme, not a hash input; the fuse holds a hash of the public key material in MediaTek's format, which is what `pbp.py` produces. v1.7: the eFuse Writer guide (Source L) shows the hash derivation depends on `key_type` (`legacy` or `pss`) in `pl_key.ini`, so the reviewer's instinct was right that a raw digest can differ from the fused value. `pbp.py` output or `efuse_bingen.log` is the reference; the raw digest is a cross-check that is expected to match only for `legacy`. |
+| Enforce `Enable_SW_JTAG_CON = 1` alongside SBC and DAA | **Recorded, escalated v1.7** | The cohort is already fused and its map is in the 27 July build log. A new flag means a new fuse image and belongs to the production-image review under G7 and G11, not to the cohort release. S1 records whether the key is present and its value. v1.7: Source L FAQ 5.2 says "make sure SW_JTAG_CON is blown" and the flag defaults true, but the 27 July build log does not list it. S1 now records its value from `input.xml`, `efuse_bingen.log` and the read-back; the production image decision is main plan G7 and ask 34. The cohort is not re-fused either way. |
 | S1 pass criterion "DAA = 1" | **Rejected** | DAA stays unblown by decision (G11, STOP-SHIP; conflict 8). Blowing DAA makes every download require an AuthFile the depot chain does not have and turns Source E's worst-case recovery into Cesium's. Read-back already shows DAA off |
 | S2 "eFuse programming on 100 units, SP Flash Tool or preloader self-blow, V_BAT above 3.7 V" | **Rejected** | The 100 are already fused. Self-blow is ruled out (Source C, Section 0 item 1). Cesium has no battery. This item shows the review did not have the program state |
 | S4 "flash signed production firmware onto all 100 via Download only" | **Rejected** | The cohort moves 0814 to 0909 by OTA on purpose: it is the first counted fused OTA transition (X1) and the S5 power-cut cases depend on it. Flashing would discard the evidence |
@@ -72,6 +72,7 @@
 - [ ] Open `input.xml` from CVTE. Record the value of every enable switch present. Expected keys per MediaTek Secure Boot Developer Guide V1.1 section 7: `Enable_SBC`, `Enable_DAA`, `Disable_Rom_Cmd`. Record any additional keys verbatim (for example `Disable_JTAG`, `Enable_SW_JTAG_CON`, `SBC_PUBK_HASH` and its value).
 - [ ] Open `GFH_CONFIG.ini`. Record `brom_magic_cmd_mode_permanent_dis`, `jtag_en`, `debug_en`, `sec_level`, and any key containing `dis`, `lock` or `perm`.
 - [ ] **Reference method (v1.6):** run MediaTek's `pbp.py` from the eFuse Writer package against `root_pubk.der` and record the `SBC_PUBK_HASH` it emits. This is the value the fuse image was built from. **Cross-check:** compute `openssl dgst -sha256 root_pubk.der` and, if that does not match, the SHA-256 of the modulus alone; record which form equals the `pbp.py` output so the derivation is documented for Malata and the depot. If `pbp.py` is not available at ICON, ask CVTE to run it and send the output with the command line.
+- [ ] **v1.7:** obtain `efuse_bingen.log` from the 27 July build (ask 34) and the `key_type` line from `pl_key.ini`. Record which `SBC_PUBK_HASH` slot the image writes and the state of the other slots and of every `Disable_SBC_PUBK_HASHn` bit. Record every lock bit (`sec_attr_lock`, `sbc_pubk_hash_lock` and the rest) from the read-back; expected unlocked per Shane's 15 Sep read-back. Record `Enable_SW_JTAG_CON` from the log, not only from `input.xml`.
 - [ ] Compare the computed hash to `sbc_pub_key_hash` in Shane's 15 Sep `read-efuse` output and to the hash embedded in `input.xml`.
 - [ ] File both configuration files, the `read-efuse` log and the computed hash in the test record.
 
@@ -85,13 +86,17 @@
 | `brom_magic_cmd_mode_permanent_dis` | |
 | `jtag_en` / `debug_en` | |
 | `Enable_SW_JTAG_CON` (present? value) | |
+| `key_type` in `pl_key.ini` (`legacy` / `pss`) | |
+| Hash slot written; other slots and disable bits | |
+| Lock bits set (expected none) | |
+| `efuse_bingen.log` on file (date, hash it reports) | |
 | Hash computed by ICON | |
 | Hash from `read-efuse` | |
 | Hash in `input.xml` | |
 
 **Cross-check (received 16 Sep).** CVTE's build log for `efuse_iFitG520.img`, dated 27 July 2026, reports `EFUSE_Enable_SBC = 1`, `EFUSE_Enable_DAA = 0`, `EFUSE_Enable_SLA = 0`, `EFUSE_Disable_BROM_CMD = 0`, `EFUSE_Disable_DBGPORT_LOCK = 0`, `EFUSE_USB_download_type = 0`, and states `brom_magic_cmd_mode_permanent_dis` does not exist in the project. The values read from `input.xml` must agree with this log; a disagreement is itself a finding.
 
-**Pass:** `Enable_SBC` true; `Enable_DAA` false; `Disable_Rom_Cmd` (or `Disable_BROM_CMD`) false and `brom_magic_cmd_mode_permanent_dis` 0 or absent; values agree with CVTE's 27 July build log; ICON-computed hash equals the read-back hash.
+**Pass:** `Enable_SBC` true; `Enable_DAA` false; `Disable_Rom_Cmd` (or `Disable_BROM_CMD`) false and `brom_magic_cmd_mode_permanent_dis` 0 or absent; values agree with CVTE's 27 July build log; ICON-computed hash equals the read-back hash. **v1.7:** hash in `efuse_bingen.log` equals the read-back; no lock bit set unless G12 has recorded a decision to set it.
 
 **Fail:** any of: `Disable_Rom_Cmd` true or `brom_magic_cmd_mode_permanent_dis` 1 (stop: no cohort unit to customers, fuse image must be regenerated); `Enable_DAA` true (stop: recovery requires an AuthFile that does not exist in the depot chain); hash mismatch (stop: the key CVTE sent is not the key that was burned, escalate before anything else).
 
@@ -178,6 +183,7 @@
 
 - [ ] Open the enclosure and locate Force Flash per the S3 photo. Check the switch with a meter: it must pull the line low when pressed and the contact must hold (a worn tact switch that bounces open during the BROM sample is a plausible cause of the 15 Sep result).
 - [ ] SP Flash Tool V6, `flash.xml` from `VKC1_20260909.zip`, signed `DA_BR.bin`, connection USB, scene **Format all + download**, exactly as CVTE demonstrated. Note this erases userdata and may erase NVRAM or calibration data; nothing on the first article needs preserving, but **record which partitions the scene formatted** (tool log) so the depot knows the cost of this path. **v1.6:** do not substitute "Download only" on the bricked unit until CVTE answers ask 30; the proven procedure comes first. If ask 30 confirms "Download only" also enters from BROM, it becomes the depot default and "Format all" the fallback. Confirm every image in the scene is the signed 0909 set, since BROM will verify the DA and the new preloader against the burned hash.
+- [ ] **v1.7:** record the scene used. If the unit enumerates, try **Download Only** first with the same package and only fall back to **Format all + download** if the DA refuses or the write fails (Source M: Format All erases NVRAM; Download Only touches only the partitions it writes). Either result answers ask 30 for this unit. If the package includes `checksum.ini`, enable "DL All with CheckSum" in the DA options. If the BROM does not enumerate on the first hold, repeat the hold several times before changing anything else (Source M FAQ on `Kcol0`).
 - [ ] Click **Download** so the tool is listening. Start the USB bus monitor. Connect the cable. 12 V off.
 - [ ] Press and hold Force Flash. Apply 12 V while holding. Keep holding until the tool reports a device or 60 seconds pass. Record the time from 12 V to first enumeration and the VID:PID.
 - [ ] Let the download run to "Download Ok". Record the console log in full.
@@ -212,11 +218,11 @@
 **Checklist**
 
 - [ ] Before flashing: `read-efuse` and save the log. Record `sbc_en`, `sbc_pub_key_hash`, `daa_en`, `sla_en`, `jtag_dis`.
-- [ ] SP Flash Tool V6, `flash.xml` from VKC1_20260909.zip, signed `DA_BR.bin`, connection USB. Choose the **Firmware Upgrade** profile (the boot-chain profile the SOP documents).
+- [ ] SP Flash Tool V6, `flash.xml` from VKC1_20260909.zip, signed `DA_BR.bin`, connection USB. Choose the **Firmware Upgrade** profile (the boot-chain profile the SOP documents). **v1.7:** if `checksum.ini` is in the package, enable "DL All with CheckSum" so the DA verifies each image after writing (Source M); note in the record whether the option was available.
 - [ ] Enter download mode by whichever method passed in S3 (or the plain preloader window from Attempt A). Run the download. Record the console log through `Download Ok` or the failure message.
 - [ ] Power cycle. Confirm the unit boots to Android. Record fingerprint (`VKC1_20260909`), `ro.boot.verifiedbootstate`, `ro.boot.veritymode`.
 - [ ] `read-efuse` again. Compare to the pre-flash log.
-- [ ] If a **Download Only** or full-image profile exists in the package, repeat the flash with it and record the partition list it wrote. This is the profile the depot needs for failures outside the boot chain (R19).
+- [ ] If a **Download Only** or full-image profile exists in the package, repeat the flash with it and record the partition list it wrote. This is the profile the depot needs for failures outside the boot chain (R19). **v1.7:** after each scene, confirm Wi-Fi MAC, Bluetooth address and any touch or display calibration are intact; a loss points at the NVRAM region (Source M) and must be written into the depot procedure as a restoration step.
 
 **Record**
 
@@ -227,6 +233,8 @@
 | `daa_en` / `sla_en` / `jtag_dis` | | |
 | `verifiedbootstate` / `veritymode` | | |
 | Profile used and result | | |
+| `checksum.ini` present / CheckSum enabled | | |
+| NVRAM and calibration intact after flash | | |
 
 **Pass:** `Download Ok`; boots to 0909; fuse read-back byte-identical before and after; verified boot state green and verity enforcing.
 
