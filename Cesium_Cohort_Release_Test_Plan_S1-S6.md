@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.17. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.19. It does not authorize fusing of production units.
 
 | | |
 |---|---|
