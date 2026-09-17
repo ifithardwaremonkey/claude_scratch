@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.15. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.17. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -12,9 +12,33 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.3, 17 September 2026 (1.2 and 1.1 on 16 to 17 September, 1.0 on 15 September). v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added for the bricked first article |
+| Revision | 1.4, 17 September 2026 (1.3 and 1.2 the same day, 1.1 on 16 September, 1.0 on 15 September). v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 10 October Go/No-Go in the main plan (Option C), and MP is 15 October |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
+
+**Cross-reference to the 17 Sep Basecamp post (v1.4).** The Basecamp message to CVTE, iFIT and Malata numbers actions per person. This table maps them to the cases here so results can be filed against the right step.
+
+| Basecamp item | Case here | Gates |
+|---|---|---|
+| Simon 1: ship ring and test units | Logistics; enables ICON's S5 repeat, S7, US depot rehearsal | Shipment |
+| Simon 2: OTA five units with two power cuts | **S5** (CVTE first) | Cohort release |
+| Simon 3: depot flash a healthy fused unit | **S4** | Cohort release |
+| Simon 4: read-efuse on three units, logs for 100 | **S6** | Cohort release |
+| Simon 5: recovery log, serial, versions | S3 evidence (ask 29) | Confidence |
+| Simon 6: Format all vs Download only | Depot procedure (ask 30) | Confidence, H1 |
+| Simon 7: Force Flash is the BROM pin | Procedure (ask 32) | Confidence |
+| Simon 8: Shane's method, then recover | Conflict 12 test, E5 second half (ask 31) | Confidence |
+| Simon 9: MTK_SEC_BOOT, LK lock state | Feeds A0-b (ask 13) | Unfused fleet |
+| Simon 10: AB_OTA_PARTITIONS, vendor-freeze | Feeds S2 (ask 27) | E1 |
+| Simon 11: OTA the customer units, hold at dock | Release step after S5 | Cohort release |
+| Shane 1: recover the bricked first article | **S3b** | E5, X3, confidence |
+| Shane 2: fuse files and hash | **S1** | Cohort release |
+| Shane 3: payload partition list | **S2** | Cohort release |
+| Shane 4: unfused 0909 checks | **A0-b** (paper section) | Unfused fleet |
+| Shane 5: ring placement, S5 repeat, soak, US depot | S5 repeat, **S7**, H1 | Confidence, X2 |
+| Malata 1 to 4: unfused profile, experience, sacrificial units, channel | Main plan Tier 2, ME1 and ME4 | Malata line |
+| Malata 5 to 7: fuse, read back, brick and recover, boot | Main plan Tier 2, ME2 and ME3 | Malata line |
 
 **Status 17 Sep.** CVTE has demonstrated S3 on a deliberately bricked fused unit (preloader signed to a key that does not match the burned hash) and recovered it. The procedure below is CVTE's, with the three conditions that differ from ICON's failed 15 Sep attempt marked **(condition)**. Shane's own brick method, requested by CVTE, is in S3b.
 
