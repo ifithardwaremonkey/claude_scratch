@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.8. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.15. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -12,9 +12,11 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: ICON, on the ring units after they ship (about one week transit). S6: CVTE, from the per-serial line logs plus three fresh read-backs. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814 |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.1, 16 September 2026 (1.0 on 15 September) |
+| Revision | 1.2, 17 September 2026 (1.1 on 16 September, 1.0 on 15 September). v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added for the bricked first article |
 
-**Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. Do not start S3 on the bricked unit; use a healthy one.
+**Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
+
+**Status 17 Sep.** CVTE has demonstrated S3 on a deliberately bricked fused unit (preloader signed to a key that does not match the burned hash) and recovered it. The procedure below is CVTE's, with the three conditions that differ from ICON's failed 15 Sep attempt marked **(condition)**. Shane's own brick method, requested by CVTE, is in S3b.
 
 **Global record per unit.** Serial, board revision, firmware fingerprint before and after, tester, date, tool and driver versions, console log file name, photos where the step says so.
 
@@ -83,42 +85,81 @@
 
 ## S3. Forced download entry on a healthy fused unit
 
-**Gates:** P2 first half, conflict 11, ask 15. **Effort:** 1 hour. **Units:** one healthy cohort unit that boots normally. **Do not use the bricked unit.**
+**Gates:** P2 first half, conflict 11. **Effort:** 1 hour. **Units:** one healthy cohort unit that boots normally. **Status: passed at CVTE on 17 Sep on a bricked unit, which is the stronger case.** ICON runs it on a healthy unit only for the record and to rehearse S3b; if no healthy fused unit is at ICON, skip to S3b.
 
 **Setup checklist**
 
 - [ ] Confirm the unit boots to Android and record `getprop ro.build.fingerprint`, `ro.boot.verifiedbootstate`, `ro.boot.veritymode`.
-- [ ] Power off. Open the enclosure. Photograph the board and identify the tact switch CVTE marked in the 14 Sep photo (near the `DC_12V_IN` header). Confirm with CVTE's photo that it is the download switch and not `RESET`.
+- [ ] Power off. Open the enclosure. Photograph the board and identify the **Force Flash** tact switch CVTE marked in the 14 Sep and 17 Sep photos (near the `DC_12V_IN` header). Confirm against CVTE's photo that it is Force Flash and not `RESET`.
 - [ ] Install MediaTek USB VCOM drivers on the PC. Confirm in Device Manager that no MediaTek device is currently listed.
-- [ ] Start SP Flash Tool V6. Load `flash.xml` from the 0909 package. Set connection to USB, select the signed `DA_BR.bin`. Put the tool in **Download** waiting state.
+- [ ] Start SP Flash Tool V6. Load `flash.xml` from the 0909 package. Connection USB, signed `DA_BR.bin` selected. **(condition 1)** Set the scene to **Format all + download**, exactly as CVTE did. For S3 on a healthy unit this scene would erase the unit, so the tester must be ready to cancel at the handshake; if the tool version cannot be cancelled cleanly, run S3 only on a unit that S4 will reflash anyway.
+- [ ] **(condition 2)** Click **Download** now, before power, so the tool is actively polling for a BROM device. Confirm the status bar shows it waiting.
 - [ ] Start the USB bus monitor with a capture log. Note the time.
 - [ ] Connect the mini-USB cable to the PC. 12 V still off.
 
-**Attempt A: BROM window without key**
+**Attempt A: BROM window without key (reference only)**
 
-- [ ] Apply 12 V with no button pressed. Watch the bus monitor for 30 seconds. Record any device that appears, with VID:PID and how long it stays. Expected candidates: `0E8D:0003` (BROM), `0E8D:2000` (preloader). Remove 12 V.
+- [ ] Apply 12 V with no button pressed. Watch the bus monitor for 30 seconds. Record any device that appears, with VID:PID and how long it stays. Expected candidates: `0E8D:0003` (BROM), `0E8D:2000` (preloader). Remove 12 V. If the tool starts a download, cancel it.
 
-**Attempt B: download switch held**
+**Attempt B: Force Flash held before power (CVTE's procedure)**
 
-- [ ] Hold the download switch. Apply 12 V. Keep holding for 10 seconds, then release. Watch the bus monitor for 60 seconds. Record devices, VID:PID, duration, and whether SP Flash Tool reports a connection. Remove 12 V.
+- [ ] **(condition 3)** Press and hold Force Flash **first**, with 12 V still off. Then apply 12 V while continuing to hold. Keep holding until the tool reports a device (CVTE: "ensure it is low after power-on"). Do not release at a fixed time.
+- [ ] Record: devices seen with VID:PID, the tool console from first contact, and whether the tool reports the BROM or the DA stage. Once the tool has connected and identified the device, **cancel** before any partition is written. Remove 12 V.
 
-**Attempt C: switch held, tool handshake**
+**Attempt C: repeat of B (repeatability)**
 
-- [ ] Repeat Attempt B with SP Flash Tool already in Download and click Download before applying 12 V, so the tool is actively polling. Record the tool console output. If the tool connects, **stop at the connection**: do not flash. Close the tool cleanly and power off.
+- [ ] Power-cycle and repeat Attempt B once. Two successes out of two are required, because the 15 Sep failure was a single attempt with no repeat.
 
 **Record**
 
-| Attempt | Devices seen (VID:PID) | Duration visible | SP Flash Tool connected? | Console excerpt |
+| Attempt | Devices seen (VID:PID) | Time from 12 V to first enumeration | Tool stage reached (BROM / DA / download started) | Console excerpt |
 |---|---|---|---|---|
 | A: no key | | | | |
-| B: key held | | | | |
-| C: key held + tool polling | | | | |
+| B: Force Flash held before power | | | | |
+| C: repeat of B | | | | |
 
-**Pass:** in Attempt B or C, a MediaTek device enumerates and SP Flash Tool reports a connection (DA loaded or "waiting for download" reached). Record which mode (BROM or preloader) by VID:PID. The unit must boot normally afterwards.
+**Pass:** in Attempts B and C, a MediaTek device enumerates and SP Flash Tool reports a connection (BROM handshake or DA loaded). Record which mode by VID:PID; `0E8D:0003` is the BROM entry that E5 needs. The unit must boot normally afterwards.
 
-**Fail:** no MediaTek device enumerates in any attempt. Interpret with S1: if `Disable_Rom_Cmd` is unset, the failure is procedure, hardware path or BROM behavior, and ask 15 to MediaTek becomes blocking for customer release; if it is set, the failure is explained and the cohort stays internal.
+**Fail:** no MediaTek device enumerates in B or C with all three conditions met. Interpret with S1 (ROM command disable state) and with CVTE's 17 Sep result: since CVTE's unit entered BROM on the same fuse map, a failure at ICON is a procedure or fixture difference (driver, cable, hub, button contact, 12 V rise time) before it is a BROM behavior question. Photograph the setup and send CVTE the console log.
 
 **Note on Attempt A.** If the preloader enumerates briefly even with no key, that is the normal preloader USB window used by the factory SOP and is sufficient for S4. It says nothing about BROM entry when the preloader is bad, which is the E5 question; only a BROM-mode device (`0E8D:0003`) in Attempt B or C answers that.
+
+---
+
+## S3b. BROM recovery of the bricked first article J26080143-0A00076
+
+**Gates:** E5, X3, P2 second half. **Effort:** 1 hour. **Units:** the bricked first article (preloader RSA signature corrupted in boot0 on 16 Sep, boot1 intact, fused 8 Sep, userdebug VKC1_20260907, unlocked). **Runs at ICON today; no cohort hardware needed.**
+
+**Why this should work now.** CVTE's 17 Sep brick and this one are the same BootROM event: BROM rejects the preloader in boot0 against the burned hash, whether the signature is corrupted (this unit) or valid under the wrong key (CVTE's). CVTE recovered theirs. The two differences from the 15 Sep attempt on this unit are the button already low when 12 V is applied and the tool already polling in "Format all + download". One difference between the units is untested: this one was fused first and corrupted afterwards; CVTE's was flashed with mismatched firmware and then fused.
+
+**Checklist**
+
+- [ ] Open the enclosure and locate Force Flash per the S3 photo. Check the switch with a meter: it must pull the line low when pressed and the contact must hold (a worn tact switch that bounces open during the BROM sample is a plausible cause of the 15 Sep result).
+- [ ] SP Flash Tool V6, `flash.xml` from `VKC1_20260909.zip`, signed `DA_BR.bin`, connection USB, scene **Format all + download**. Note this erases userdata; nothing on the first article needs preserving. Confirm every image in the scene is the signed 0909 set, since BROM will verify the DA and the new preloader against the burned hash.
+- [ ] Click **Download** so the tool is listening. Start the USB bus monitor. Connect the cable. 12 V off.
+- [ ] Press and hold Force Flash. Apply 12 V while holding. Keep holding until the tool reports a device or 60 seconds pass. Record the time from 12 V to first enumeration and the VID:PID.
+- [ ] Let the download run to "Download Ok". Record the console log in full.
+- [ ] Power-cycle. Confirm boot to Android and record `ro.build.fingerprint` (expected VKC1_20260909), `ro.boot.verifiedbootstate`, `ro.boot.veritymode`.
+- [ ] `read-efuse`. Compare to the 8 Sep read-back: `sbc_en` on, hash `6da1756f…83730c68`, DAA, SLA, JTAG-disable off. A flash must never alter fuse state.
+- [ ] If no enumeration after two attempts: photograph the setup, capture the bus-monitor log, and try once with a different cable and a USB 2.0 port on a different host. Then stop and send CVTE the logs with ask 31; do not proceed to the eMMC test point without CVTE's board guidance (ask 24).
+
+**Record**
+
+| Field | Value |
+|---|---|
+| Attempt count to first enumeration | |
+| VID:PID at first enumeration | |
+| Time from 12 V to enumeration | |
+| Tool result | |
+| Fingerprint after boot | |
+| verifiedbootstate / veritymode | |
+| read-efuse identical to 8 Sep | |
+
+**Pass:** the unit enumerates, "Download Ok", boots VKC1_20260909 with verified boot green, fuse read-back unchanged. E5 and X3 close; confidence becomes eligible for Medium per the main plan Section 3.5.
+
+**Fail:** no enumeration with all conditions met and two cable/host variations tried. Confidence stays Low. The order-of-events difference (fused-then-corrupted versus mismatched-then-fused) becomes the question for CVTE and MediaTek (ask 31), and the eMMC test point (ask 24) returns as the fallback path.
+
+**Method to give CVTE (their request of 17 Sep).** On a fused unit that boots: take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
 
 ---
 
@@ -253,7 +294,8 @@ These are not tests but the release decision needs them on file.
 | S1 | S2 | S3 | S4 | S5 | S6 | Paper | Decision |
 |---|---|---|---|---|---|---|---|
 | Pass | Pass | Pass | Pass | Pass | Pass | Done | Release ICON ring now; release customer units from CVTE's dock after they have taken the 0814-to-0909 OTA at CVTE with per-serial logs |
-| Pass | Pass | **Fail** | Pass | Pass | Pass | Done | Release ICON ring; hold customers for MediaTek's answer to ask 15. Exposure meanwhile is boot0 storage failure only, since S2 shows OTA cannot write the preloader |
+| Pass | Pass | **Fail** | Pass | Pass | Pass | Done | Release ICON ring; hold customers for MediaTek's answer to ask 15. Exposure meanwhile is boot0 storage failure only, since S2 shows OTA cannot write the preloader. **Not the active branch from 17 Sep: S3 passed at CVTE** |
+| any | any | Pass (CVTE) | any | any | any | any | S3b result does not change the cohort release. S3b pass closes E5 and X3 and moves confidence toward Medium (fused production); S3b fail keeps confidence Low and reopens ask 15 with the order-of-events question |
 | **Fail: ROM cmd disable set** | any | any | any | any | any | any | No cohort unit to customers. The 100 stay ICON-internal. Fuse image regenerated before any further fusing |
 | **Fail: hash mismatch or DAA on** | any | any | any | any | any | any | Stop; escalate to CVTE before any other step |
 | any | **Fail** | any | any | any | any | any | Stop; release pipeline must exclude preloader before cohort or MP ships |
