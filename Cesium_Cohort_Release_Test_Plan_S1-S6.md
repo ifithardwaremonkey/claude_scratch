@@ -159,7 +159,7 @@
 
 **Fail:** no enumeration with all conditions met and two cable/host variations tried. Confidence stays Low. The order-of-events difference (fused-then-corrupted versus mismatched-then-fused) becomes the question for CVTE and MediaTek (ask 31), and the eMMC test point (ask 24) returns as the fallback path.
 
-**Method to give CVTE (their request of 17 Sep).** On a fused unit that boots: take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
+**Method given to CVTE (their request of 17 Sep).** Delivered the same day as the full G520 eFuse Burn Log PDF. Summary for the record: on a fused unit that boots, take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
 
 ---
 
