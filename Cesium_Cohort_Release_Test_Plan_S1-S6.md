@@ -98,7 +98,7 @@
 | preloader / preloader_a / preloader_b / boot0 | | non-A/B, BROM-verified |
 | lk / lk_a / lk_b | | A/B, preloader-verified |
 | tee / tee_a / tee_b | | A/B, preloader-verified |
-| boot, vbmeta*, dtbo, system*, vendor*, product*, odm*, *_dlkm | | A/B |
+| boot, vbmeta\*, dtbo, system\*, vendor\*, product\*, odm\*, \*_dlkm | | A/B |
 | other (list) | | |
 
 **Pass:** no preloader or boot0 partition in any OTA payload. LK, TEE and Android partitions may be present: a bad LK is refused by the fused preloader, which then offers preloader USB download mode, so that failure is depot-recoverable.
