@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.20. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.21. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -207,7 +207,7 @@
 
 **Fail:** no enumeration with all conditions met and two cable/host variations tried. Confidence stays Low. The order-of-events difference (fused-then-corrupted versus mismatched-then-fused) becomes the question for CVTE and MediaTek (ask 31), and the eMMC test point (ask 24) returns as the fallback path.
 
-**Method given to CVTE (their request of 17 Sep).** Delivered the same day as the full G520 eFuse Burn Log PDF. Summary for the record: on a fused unit that boots, take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
+**Method given to CVTE (their request of 17 Sep).** **Binary delivered 18 Sep:** `preloader_iFitG520.bin` (corrupted copy), 736,868 bytes, SHA-256 `b78fb3c34bc8d6589dbe52f50c3c287a693a1bd943cb431012f994e93f024980`, 32 bytes at offset 0xB3C28 XOR 0xFF on the VKC1_20260907 signed preloader; flashed to boot0 only, Download Only scene. Delivered the same day as the full G520 eFuse Burn Log PDF. Summary for the record: on a fused unit that boots, take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
 
 ---
 
