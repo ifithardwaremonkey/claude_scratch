@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.21. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.22. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -12,7 +12,7 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.7, 18 September 2026 (1.6 earlier on 18 September; 1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.7: consequences of main plan r1.20 (MediaTek eFuse Writer Developer Guide V1.1 and Flashtool guide, Sources L and M): S1 records `key_type`, the hash slot, lock bits and `Enable_SW_JTAG_CON` against `efuse_bingen.log`; S3b and S4 record the SP Flash Tool scene and its NVRAM effect and enable "DL All with CheckSum" where `checksum.ini` exists; three dispositions of the external review revised. v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Revision | 1.8, 24 September 2026 (1.7 and 1.6 earlier on 18 September; 1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.8: S3b rewritten after CVTE reproduced the 15 Sep failure with Shane's preloader (main plan Source N); expected result is fail, run once for the record with UART; S1 record filled from CVTE's input.xml. v1.7: consequences of main plan r1.20 (MediaTek eFuse Writer Developer Guide V1.1 and Flashtool guide, Sources L and M): S1 records `key_type`, the hash slot, lock bits and `Enable_SW_JTAG_CON` against `efuse_bingen.log`; S3b and S4 record the SP Flash Tool scene and its NVRAM effect and enable "DL All with CheckSum" where `checksum.ini` exists; three dispositions of the external review revised. v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
 | Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 2 October Go/No-Go in the main plan (Option C, the M4 gate). S7 below is the confirmation condition on a Go and must start the day the test units arrive |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
@@ -40,6 +40,8 @@
 | Shane 5: ring placement, S5 repeat, soak, US depot | S5 repeat, **S7**, H1 | S7 confirms the 2 Oct Go; X2 |
 | Malata 1 to 4: unfused profile, experience, sacrificial units, channel | Main plan Tier 2, ME1 and ME4 | Malata line |
 | Malata 5 to 7: fuse, read back, brick and recover, boot | Main plan Tier 2, ME2 and ME3 | Malata line |
+
+**Status 24 Sep.** CVTE's Force Flash procedure failed on a unit bricked with Shane's corrupted-signature preloader (main plan Source N, conflict 15). S3 remains passed for the wrong-key case only. S3b is expected to fail and is run once for the record. Cohort release is unaffected by the decision rule below: exposure remains boot0 storage failure, now understood as scrap rather than repair. CVTE has not yet reported S4, S5 or S6.
 
 **Status 17 Sep.** CVTE has demonstrated S3 on a deliberately bricked fused unit (preloader signed to a key that does not match the burned hash) and recovered it. The procedure below is CVTE's, with the three conditions that differ from ICON's failed 15 Sep attempt marked **(condition)**. Shane's own brick method, requested by CVTE, is in S3b.
 
@@ -80,12 +82,12 @@
 
 | Field | Value |
 |---|---|
-| `Enable_SBC` | |
-| `Enable_DAA` | |
+| `Enable_SBC` | true (CVTE input.xml, 18 Sep) |
+| `Enable_DAA` | false (CVTE input.xml, 18 Sep) |
 | `Disable_Rom_Cmd` | |
 | `brom_magic_cmd_mode_permanent_dis` | |
 | `jtag_en` / `debug_en` | |
-| `Enable_SW_JTAG_CON` (present? value) | |
+| `Enable_SW_JTAG_CON` (present? value) | false (CVTE input.xml, 18 Sep) |
 | `key_type` in `pl_key.ini` (`legacy` / `pss`) | |
 | Hash slot written; other slots and disable bits | |
 | Lock bits set (expected none) | |
@@ -177,7 +179,9 @@
 
 **Gates:** E5, X3, P2 second half. **Effort:** 1 hour. **Units:** the bricked first article (preloader RSA signature corrupted in boot0 on 16 Sep, boot1 intact, fused 8 Sep, userdebug VKC1_20260907, unlocked). **Runs at ICON today; no cohort hardware needed.**
 
-**Why this should work now.** CVTE's 17 Sep brick and this one are the same BootROM event: BROM rejects the preloader in boot0 against the burned hash, whether the signature is corrupted (this unit) or valid under the wrong key (CVTE's). CVTE recovered theirs. The two differences from the 15 Sep attempt on this unit are the button already low when 12 V is applied and the tool already polling in "Format all + download". One difference between the units is untested: this one was fused first and corrupted afterwards; CVTE's was flashed with mismatched firmware and then fused.
+**Why this should work now (v1.2, superseded).** CVTE's 17 Sep brick and this one are the same BootROM event: BROM rejects the preloader in boot0 against the burned hash, whether the signature is corrupted (this unit) or valid under the wrong key (CVTE's). CVTE recovered theirs. The two differences from the 15 Sep attempt on this unit are the button already low when 12 V is applied and the tool already polling in "Format all + download". One difference between the units is untested: this one was fused first and corrupted afterwards; CVTE's was flashed with mismatched firmware and then fused.
+
+**Why it is now expected to fail (v1.8).** On 18 Sep CVTE flashed this exact corrupted preloader onto one of its own fused units and could not recover it with the procedure that worked on 17 Sep. The wrong-key and corrupted-signature cases behave differently in BROM (main plan conflict 15), and MediaTek has been asked why. Run S3b once with UART attached so the record has ICON's own console capture; do not repeat beyond two attempts, and do not brick any further unit until MediaTek answers.
 
 **Checklist**
 
