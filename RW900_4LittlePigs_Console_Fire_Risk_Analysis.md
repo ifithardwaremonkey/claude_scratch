@@ -133,8 +133,37 @@ All five occurred at or within minutes of first power-on and none recurred with 
 
 ---
 
-## 7. Assumptions and gaps
+## 7. Addendum – Power adapter (ZH1381, 12 V / 4 A) and the "output protection did not trip" observation
 
-- Tablet current draw, resistance-motor stall current, and adapter part number/current rating are not in any supplied document; the R21 and R51/R52 dissipation numbers above use 12 V nominal and conservative estimates.
+**Adapter facts now available:** ZH1381 Rev B (5/17/2023) is the external supply certification and requirements sheet. Output is 12 VDC, 4 A (48 W). For US and Canada the *preferred* construction is **non-Class 2**, certified to UL 1012 / 60950-1 / 62368-1 without the Class 2 or Limited Power Source (LPS) marking; only the Europe section requires an LPS, output-protected supply. ZH1381 gives no overcurrent (OCP) or overvoltage threshold or protection behavior, and it post-dates both the console design and the recalled rowers' sales window.
+
+**Fault energy budget without a trip.** Adapter OCP on a supply of this class is typically set at 120–150 % of rated output:
+
+| Quantity | Value |
+|---|---|
+| Rated output | 12 V, 4 A, 48 W |
+| Typical OCP threshold | 4.8–6.0 A |
+| Fault impedance below which OCP trips | ≤ 2.0–2.5 Ω |
+| Power available into a fault that does *not* trip | up to ~58–72 W continuous |
+| Power that chars FR-4 / ignites flux under a small SMD part | ~1–3 W localized |
+
+**What this means for the five events.** "Output protection did not trip" is the expected outcome for every top-ranked failure mode in this report, all of which are resistive faults far above 2.5 Ω:
+
+- R21 into a shorted 5 V rail: 15 Ω, 0.8 A, ~10 W. Never trips.
+- Partially cracked or over-voltaged MLCC (CA4, CA2/CA3, C4/C18/C19): typically 5–20 Ω, 0.6–2.4 A, 7–29 W. Never trips.
+- Solder bridge or stray strand with a few ohms of contact resistance at HD4/HD13: same regime.
+- Tablet-side fault behind R51/R52: looks like normal load to the adapter.
+
+Only a hard, sub-2 Ω short across VIN would have tripped the supply. The one event where the supply did sag (Cavallaro, 2 V at the console) used a non-iFIT 23.5 V adapter and tells us nothing about the iFIT unit. In the other four events the adapter continued to deliver 12 V into the fault, which is evidence the fault was resistive, **not** evidence that the adapter was healthy or that the console was not at fault.
+
+**Effect on the ranking.** No reordering. Risk #1 is strengthened: the design relies on the adapter as its only fault-current limit, and the adapter spec prefers a construction that is not a limited power source. The dead-short sub-case under #2 is slightly weakened; #3 and #4 (resistive heaters) are slightly strengthened.
+
+**Design implication.** A console-side fuse or PTC must be sized *below* the adapter OCP so that it, not the adapter, is the element that opens. With a 4 A adapter and unknown tablet inrush, a 3 A slow-blow or an equivalent PTC at HD4 VIN is the starting point, to be finalized once tablet inrush and steady-state current are measured. Pair it with a 14–16 V TVS (SMBJ14A class) so an over-voltage adapter is clamped and the fuse opens instead of an MLCC failing.
+
+**Still needed:** the specific adapter drawing/model referenced by ZH1381, its OCP type and threshold (hiccup, foldback, constant-current), OVP threshold, and confirmation of whether the adapters shipped in kit 1005091K carry the LPS mark.
+
+## 8. Assumptions and gaps
+
+- Tablet current draw and resistance-motor stall current are not in any supplied document; the R21 and R51/R52 dissipation numbers above use 12 V nominal and conservative estimates. The adapter is now known to be 12 V / 4 A (ZH1381), but its OCP/OVP thresholds and behavior are not.
 - The PCB layout (ZH0107) was only available as a low-resolution image; trace widths, clearances, and MLCC keep-outs were not verified.
 - The failure analysis of the original 3 Little Pigs consoles was not provided, so this analysis cannot confirm that any of the five items above is the recall root cause. Items #1–#3 are the ones most consistent with a console that "overheats and ignites."
