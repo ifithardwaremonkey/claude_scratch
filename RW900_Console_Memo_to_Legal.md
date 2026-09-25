@@ -14,7 +14,7 @@ You asked for Engineering's view on the five post-remedy smoke or fire events lo
 
 ## What we reviewed
 
-Schematic ZH0106 Rev C, block diagram ZH0818, EBOM 437196 Rev C, the CPSC press release draft, and the 7/7/2026 incident tracker export. We have not examined any returned hardware, the PCB layout at full resolution, the tablet module, the power adapter, or the failure analysis of the original consoles.
+Schematic ZH0106 Rev C, block diagram ZH0818, EBOM 437196 Rev C, power supply requirements ZH1381, the CPSC press release draft, and the 7/7/2026 incident tracker export. We have not examined any returned hardware, the PCB layout at full resolution, the tablet module, the power adapter itself, the original console's harness drawing, or the failure analysis of the original consoles.
 
 ## Preliminary observations
 
