@@ -1,10 +1,12 @@
+**Attorney Client Privilege - Work Product - Prepared at the Direction of Counsel - CONFIDENTIAL - DO NOT SHARE**
+
 # Memo: Engineering Preliminary Assessment – RW900 Replacement Console Smoke/Fire Events
 
 **To:** Legal  
 **From:** Engineering  
-**Date:** September 24, 2026  
+**Date:** September 25, 2026  
 **Re:** Post-remedy console incidents, NTRW19147 recall (RP250562); replacement console ERWNT19147UX / "4 Little Pigs Universal" PCBA  
-**Privileged & Confidential – Prepared at the Direction of Counsel**
+**Revision:** Rev 3, September 25, 2026
 
 ## Purpose
 
@@ -24,6 +26,10 @@ Schematic ZH0106 Rev C, block diagram ZH0818, EBOM 437196 Rev C, the CPSC press 
 ## Note on the power adapter and "output protection did not trip"
 
 The external adapter is specified at 12 V, 4 A (ZH1381). Its overcurrent protection, like that of any supply in this class, responds only to a hard, low-impedance short. The failure modes Engineering considers most plausible are resistive faults that draw well under the trip threshold while dissipating enough to char a board. The fact that the adapter did not trip is therefore consistent with a console-side fault and should not be read as evidence that the console was not at fault or that the adapter was healthy. ZH1381 also shows the preferred US adapter construction is not a limited-power-source type, so the console's lack of its own fuse matters more, not less.
+
+## Note on installation error
+
+The most likely installation error is reuse of the original rower's upright wire harness with the new console. iFIT's service notes flag "did not install wire harness" as the deviation in two cases, and two customers described the swap as "plug and play," which implies the legacy connectors mate with the new console. If the legacy harness pin assignment differs, it would apply 12 V to the wrong pins, which the console does not protect against. The second most likely error is use of a non-iFIT power adapter (one case, 23.5 V). One case (24556296) fits neither and still points at the console. Kits reaching the home before the technician, packaged without consumer-facing warnings, are the process condition behind the self-installs. Confirming the harness hypothesis requires the original console's harness drawing, which Engineering has requested.
 
 ## Important caveats
 

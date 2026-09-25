@@ -1,3 +1,5 @@
+**Attorney Client Privilege - Work Product - Prepared at the Direction of Counsel - CONFIDENTIAL - DO NOT SHARE**
+
 # NordicTrack RW900 (NTRW19147) Replacement Console – Production Fire Risk Analysis
 
 **Console:** ERWNT19147UX, Icon P/N 437196 (EBOM Rev C, 4/15/2022)  
@@ -5,7 +7,9 @@
 **Block diagram:** ZH0818 Rev -  
 **Context:** CPSC fast-track recall RP250562 (Oct 2025) of ~44,800 rowers for the original "3 Little Pigs" console overheating/igniting (8 incidents, 2 fires, 6 smoke/melt, $6k+ damage). Remedy is a technician-installed replacement console kit (1005091K). Post-remedy tracker (7/7/2026 export) shows 5 distinct replacement consoles that smoked or caught fire, mostly within seconds of first power-on.  
 
-Sources reviewed: ZH0106 schematic (7 sheets + PCB), ZH0818 block diagram, EBOM 437196, CPSC press release draft, post-remedy incident tracker.
+Sources reviewed: ZH0106 schematic (7 sheets + PCB), ZH0818 block diagram, EBOM 437196, ZH1381 power supply requirements, CPSC press release draft, post-remedy incident tracker.
+
+Revision: Rev 3 (9/25/2026). Rev 2 added the power adapter addendum (Section 7); Rev 3 adds the installation-error assessment (Section 8) and the privilege legend.
 
 ---
 
@@ -162,7 +166,26 @@ Only a hard, sub-2 Ω short across VIN would have tripped the supply. The one ev
 
 **Still needed:** the specific adapter drawing/model referenced by ZH1381, its OCP type and threshold (hiccup, foldback, constant-current), OVP threshold, and confirmation of whether the adapters shipped in kit 1005091K carry the LPS mark.
 
-## 8. Assumptions and gaps
+## 8. Addendum – Most likely user installation error
+
+**Most likely: reuse of the original rower's upright wire harness with the new console.**
+
+- iFIT's own service process treats the harness as the critical step. In the Groh and Ji Ni cases the technician notes single out "did not install wire harness" as the deviation, and the corrective action was to install harness and console together. A kit that ships a new upright harness with a console swap indicates the console-to-frame interface changed.
+- The 4 Little Pigs console terminates in two JST XA pigtails (8-pin and 6-pin). If the 3 Little Pigs harness uses the same housings with a different pin assignment, the legacy harness mates perfectly and places 12 V on the wrong pins. ZH0818 puts VIN on 8-pin positions 3 and 4 and GND on 1, 2 and 6. A legacy harness with those swapped is a reverse-polarity event at the frame connector, distinct from the console-assembly reversal already ruled out, and would present identically in the field.
+- The board has no defense against it: reverse polarity reaches the TPS54231 buck and the tablet directly, and 12 V on the 6-pin 3.3 V or wiper line back-drives RG1 and the PSoC. A flash at the back of the screen within ~30 s and a dead console is the expected result.
+- Two customers described the job as "plug and play" and swapped only the monitor on its four bracket screws, which is only possible if the legacy harness connectors mate with the new console.
+
+**Why it happened.** The kit reached the home before the technician (Groh held the kit four months; Philbrook had no technician in the area; Ji Ni had removed the upright wire before the visit). The kit was packaged for a technician with no consumer-facing instruction that the harness is mandatory and the old adapter must not be used.
+
+**Second most likely: wrong power adapter.** Cavallaro had several barrel-jack adapters near the machine and used a non-iFIT 23.5 V unit. A 5.5 mm barrel is universal and the console has no overvoltage clamp. One of five cases supports this.
+
+**What does not fit.** Ji Ni smoked with a new harness and a confirmed 12 V adapter installed by a technician. Harness reuse cannot be the whole story; that case still points at the console.
+
+**How to confirm.** Compare the 3 Little Pigs upright harness drawing pin assignments (8-pin and 6-pin) against the ERWNT19147UX pigtail definitions in the EBOM and ZH0818. If VIN/GND positions differ, the mechanism is proven on paper. Then examine the Groh console for reverse-polarity signatures (failed buck IC, tablet input stage) versus a charred resistor or capacitor (console-side resistive fault). If pinouts are identical, the explanation collapses to a degraded legacy harness or receptacle wire, and the 2 V reading at the Cavallaro harness becomes the lead.
+
+**Kit-level controls (restated).** Do not release kits to the home ahead of the technician; label the console bag "new harness and adapter are mandatory, do not reuse old parts"; include a one-page consumer-facing warning even for technician installs.
+
+## 9. Assumptions and gaps
 
 - Tablet current draw and resistance-motor stall current are not in any supplied document; the R21 and R51/R52 dissipation numbers above use 12 V nominal and conservative estimates. The adapter is now known to be 12 V / 4 A (ZH1381), but its OCP/OVP thresholds and behavior are not.
 - The PCB layout (ZH0107) was only available as a low-resolution image; trace widths, clearances, and MLCC keep-outs were not verified.
