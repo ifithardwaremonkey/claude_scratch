@@ -1,6 +1,6 @@
 # Cesium Fused Cohort Release Test Plan (S1 to S6)
 
-**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.22. It does not authorize fusing of production units.
+**Purpose:** decide whether the 100 CVTE-fused Cesium tablets may be released, first to the ICON-controlled ring and then to customers. This plan executes Section 3.4 of the Cesium Hardware Root-of-Trust Authorization Plan r1.24. It does not authorize fusing of production units.
 
 | | |
 |---|---|
@@ -12,7 +12,7 @@
 | Equipment | Windows PC with the VCOM drivers installed and a USB bus monitor (USBTreeView or equivalent); mini-USB cable; switchable or programmable 12 V supply; UART console lead for the DEBUG header; hand tools to open the enclosure |
 | Unit location and executors | **The 100 fused units are at CVTE.** ICON holds the bricked unit and at most two other fused units. S1 and S2: ICON, desk work. S3 and S4: CVTE on a healthy fused unit, following the attempt A/B/C procedure below, with video of the USB bus monitor and tool console; ICON repeats if it has a healthy fused unit. S5: **CVTE first, now, on five cohort units** with UART logs and video (v1.3); ICON repeats on the ring units after they arrive. S6: CVTE, from the per-serial line logs plus three fresh read-backs. S7 and the US depot rehearsal: ICON, on the test units. CVTE ships the 15 to 20 ring units and the 7 test units now, on 0814; the shipment no longer gates the customer release |
 | Owner / Test lead | Allen Middleton / Shane Andrus |
-| Revision | 1.8, 24 September 2026 (1.7 and 1.6 earlier on 18 September; 1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.8: S3b rewritten after CVTE reproduced the 15 Sep failure with Shane's preloader (main plan Source N); expected result is fail, run once for the record with UART; S1 record filled from CVTE's input.xml. v1.7: consequences of main plan r1.20 (MediaTek eFuse Writer Developer Guide V1.1 and Flashtool guide, Sources L and M): S1 records `key_type`, the hash slot, lock bits and `Enable_SW_JTAG_CON` against `efuse_bingen.log`; S3b and S4 record the SP Flash Tool scene and its NVRAM effect and enable "DL All with CheckSum" where `checksum.ini` exists; three dispositions of the external review revised. v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
+| Revision | 1.9, 30 September 2026 (1.8 on 24 September; 1.7 and 1.6 earlier on 18 September; 1.5, 1.4, 1.3 and 1.2 on 17 September, 1.1 on 16 September, 1.0 on 15 September). v1.9: S3c added, ICON recovery of the first article by eMMC test point or in-system eMMC programming, not dependent on MediaTek. v1.8: S3b rewritten after CVTE reproduced the 15 Sep failure with Shane's preloader (main plan Source N); expected result is fail, run once for the record with UART; S1 record filled from CVTE's input.xml. v1.7: consequences of main plan r1.20 (MediaTek eFuse Writer Developer Guide V1.1 and Flashtool guide, Sources L and M): S1 records `key_type`, the hash slot, lock bits and `Enable_SW_JTAG_CON` against `efuse_bingen.log`; S3b and S4 record the SP Flash Tool scene and its NVRAM effect and enable "DL All with CheckSum" where `checksum.ini` exists; three dispositions of the external review revised. v1.6: dispositions of the external "v1.6" review against MediaTek Security 2.1 notes (table below); pbp.py made the reference for the S1 hash; Enable_SW_JTAG_CON recorded; Format all versus Download only caution in S3b; relay-harness automation and the PWR-01 to PWR-04 targeted subset added to S7; preloader UART evidence added. v1.5: Go/No-Go date 2 October; S7 is the confirmation condition on a Go and starts the day the test units arrive; Basecamp item 12 (line witness) added to the cross-reference. v1.4: release target 26 Sep; cross-reference to the 17 Sep Basecamp action items; 10 Oct fusing Go/No-Go noted. v1.3: S5 executor changed to CVTE first with ICON repeat; Malata early-start note. v1.2: S3 rewritten to CVTE's demonstrated 17 Sep procedure; S3b added |
 | Target | Cohort release signed by **26 September** if S1 to S6 pass. This plan does not decide production fusing; that is the 2 October Go/No-Go in the main plan (Option C, the M4 gate). S7 below is the confirmation condition on a Go and must start the day the test units arrive |
 
 **Ordering rule.** Run S1 and S2 first; they are desk work and either can stop everything. Run S3 before S4 on the same healthy unit. S5 and S6 can run in parallel with S3 and S4 on different units. S3b runs on the bricked unit only, at ICON, and can run today: it needs no cohort hardware.
@@ -212,6 +212,31 @@
 **Fail:** no enumeration with all conditions met and two cable/host variations tried. Confidence stays Low. The order-of-events difference (fused-then-corrupted versus mismatched-then-fused) becomes the question for CVTE and MediaTek (ask 31), and the eMMC test point (ask 24) returns as the fallback path.
 
 **Method given to CVTE (their request of 17 Sep).** **Binary delivered 18 Sep:** `preloader_iFitG520.bin` (corrupted copy), 736,868 bytes, SHA-256 `b78fb3c34bc8d6589dbe52f50c3c287a693a1bd943cb431012f994e93f024980`, 32 bytes at offset 0xB3C28 XOR 0xFF on the VKC1_20260907 signed preloader; flashed to boot0 only, Download Only scene. Delivered the same day as the full G520 eFuse Burn Log PDF. Summary for the record: on a fused unit that boots, take the signed production `preloader.bin`, flip 32 bytes inside the RSA signature block (leave the code and the GFH header untouched), write it to boot0 (`preloader_a`) only with SP Flash Tool "Download only", leave boot1 intact, power-cycle. Record whether the tool accepts the write; on 16 Sep it did, which is conflict 12. Then attempt the same BROM recovery.
+
+---
+
+## S3c. Recovery of the first article without BootROM download (v1.9)
+
+**Gates:** E5, X3 (corrupted-signature case). **Effort:** half a day once pad locations are known. **Units:** J26080143-0A00076. **Precondition:** eMMC pad locations from CVTE (main plan ask 41), or found with a scope.
+
+**Step 0, UART capture.** Attach the UART lead, power on, capture 60 seconds. File whatever BROM prints, even nothing. Send to CVTE for MediaTek.
+
+**Route A, eMMC test point to BROM download.**
+- [ ] Identify eMMC CLK or DAT0 on the board (pad, or the board-side end of a series resistor). Confirm with a scope on a healthy unit: CLK shows a burst within the first 100 ms of 12 V.
+- [ ] SP Flash Tool V6, signed `DA_BR.bin`, `flash.xml` from VKC1_20260909, scene Download Only, Download clicked and waiting. USB bus monitor running.
+- [ ] Short the chosen line to ground with a fine probe. Hold Force Flash. Apply 12 V. Watch for enumeration (0E8D:0003). Once the tool reports the BROM handshake or DA loaded, release the short.
+- [ ] Let the download write the preloader. Power-cycle. Record boot, fingerprint, `read-efuse` unchanged.
+- [ ] Two attempts maximum per line; if no enumeration, try the other line once, then stop.
+
+**Route B, in-system eMMC programming.**
+- [ ] eMMC ISP programmer (UFI, Easy JTAG or Medusa class) wired to CLK, CMD, DAT0, GND, with VCC and VCCQ supplied per the programmer's guidance; tablet's own 12 V off.
+- [ ] Read boot partition 0 first and save it; confirm the corrupted preloader is present (compare to the r1.21 artifact's hash) so the procedure is proven against the real fault.
+- [ ] Write the signed production `preloader_iFitG520.bin` (VKC1_20260909 package) into boot partition 0. Read back and compare.
+- [ ] Disconnect, power on. Record boot, fingerprint, `read-efuse` unchanged, preloader log `hw sbc: 1`.
+
+**Pass:** unit boots signed 0909 by either route; fuse read-back unchanged. E5 and X3 close for the corrupted-signature case. Route B success is additionally recorded as the candidate depot procedure for boot0 corruption (H1, R19).
+
+**Fail:** no enumeration in Route A and Route B unavailable or unsuccessful. The unit is preserved for MediaTek. Confidence stays Low; the 2 Oct decision is No-Go by rule.
 
 ---
 

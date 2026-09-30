@@ -9,7 +9,7 @@
 | MP release candidate | VKC1_20260909 (the last OS build; no 0919 build exists. Source B's header referred to a VKC1_20260919 that was never produced) |
 | Mass production | Committed 2 Oct 2026; likely build date 15 Oct 2026 because 2 Oct is a holiday (CVTE, 17 Sep). Fusing Go/No-Go for lot 1 on 2 Oct, the original M4 gate date, subject to S7 (Section 3.1, Option C). The build date is internal to iFIT and CVTE and is not shared with Malata |
 | Fused cohort | 100 units already fused by CVTE (line trial, 30 July 2026), serials recorded by the factory-test fuse check |
-| Revision | 1.23 draft, 24 September 2026. Full history in Section 10 |
+| Revision | 1.24 draft, 30 September 2026. Full history in Section 10 |
 | Owner | Allen Middleton (Tablet Engineer, ICON Health & Fitness) |
 | Supersedes | Cesium Closed-Config Field Brick-Resistance Test Plan r0.4 (test content carried forward with its case IDs); Android 15 Virtual A/B & AVB 2.0 Resiliency Test Plan v2.0 (glitch matrix carried forward with errata); Remote eFuse MT8371 Feasibility Study (conclusion adopted); MediaTek Security 2.1 Software Root of Trust Report (three-way comparison adopted, probability figures reinterpreted) |
 
@@ -752,10 +752,19 @@ Plan B section 7 questions 1–16 are carried forward unchanged and should be se
 36. To MediaTek, via CVTE: whether FA mode and `SBC_PUBK_MTK_FA` (enabled by default, Source L) give MediaTek a recovery or analysis path into a bricked fused MT8371, and under what terms. If yes, it is a second recovery route for the depot and for the bricked first article; if no, record it so nobody plans on it.
 37. To CVTE: on this eMMC layout, which partitions each SP Flash Tool scene ("Format All + Download", "Firmware Upgrade", "Download Only") erases and writes, whether NVRAM and calibration survive each, and whether the 0909 package includes `checksum.ini` so the depot can enable "DL All with CheckSum" (Source M, H1).
 
+**ICON-side recovery attempt without MediaTek (r1.24, 30 Sep).** Twelve days without a MediaTek answer. Two routes to a corrupted-preloader recovery need only board information CVTE's hardware team holds, not MediaTek:
+
+- **R-A, eMMC test point.** Hold an eMMC line (CLK or DAT0) to ground while applying 12 V with Force Flash held. BROM finds no bootable device and takes its no-media path to USB download, which is a different BROM code path from the failed-authentication halt observed in Sources I and N. Then release the short after enumeration and let SP Flash Tool write the signed preloader. Needs the eMMC test pads or the location of an accessible series component on CLK or DAT0 on C.G520.702; a scope can find CLK by its burst at power-on if CVTE cannot supply the schematic.
+- **R-B, in-system eMMC programming.** Write the good signed preloader straight into eMMC boot partition 0 through the eMMC ISP pads (CLK, CMD, DAT0, VCC, VCCQ, GND) with a commercial eMMC programmer, bypassing BROM entirely. Secure boot is not weakened: BROM verifies the restored preloader's genuine signature at the next boot. Needs the same pads as R-A plus a programmer (UFI, Easy JTAG or Medusa class, low hundreds of dollars). This is also a candidate depot procedure for any boot0 corruption, so a success is worth more than a one-off.
+- **R-C, cheap first check.** Attach the UART lead to the bricked unit and capture the console from power-on; some MediaTek BootROMs emit a short banner or error code on UART that would tell MediaTek exactly which path halted.
+
+Either R-A or R-B succeeding on J26080143-0A00076 closes E5 and X3 for the corrupted-signature case, and R-B additionally gives the depot a procedure that does not depend on BROM behavior. Test plan v1.9 adds S3c. Ask 41 requests the pad locations from CVTE today.
+
 **New asks (24 Sep, r1.22), for MediaTek via CVTE:**
 
 38. Why does a fused MT8371 enter BROM USB download with the download pin held when the preloader is validly signed under the wrong key (Source J), but not when the preloader carries the correct key and a corrupted signature (Sources I and N)? Which BROM code path handles each, and is there any pin, strap or host sequence that reaches download mode in the second case?
 39. The eMMC test-point procedure (ask 24, reinstated): which line to hold at power-on so BROM finds no preloader, its location on C.G520.702, and whether BROM then enters USB download on this part.
+41. To CVTE hardware team, not MediaTek: the eMMC ISP or test-pad locations on C.G520.702 (CLK, CMD, DAT0, VCC, VCCQ, GND), or the schematic page for the eMMC, and whether any of these pads are reachable without removing the shield. Needed for R-A and R-B above. (30 Sep)
 40. Does MediaTek's FA mode (`SBC_PUBK_MTK_FA`, ask 36) provide a recovery for a unit in the Source N state, and can MediaTek recover CVTE's bricked unit as a demonstration?
 
 **Answered by Source O (19 Sep):** ask 35 (a fused unit accepts additive second blows; a bit-clearing config is refused by the DA). Follow-up: the serial of the test unit, to be quarantined from the cohort.
@@ -784,6 +793,8 @@ Plan B section 7 questions 1–16 are carried forward unchanged and should be se
 ## 10. Revision history
 
 Newest first. Each entry records what changed and the evidence that drove it.
+
+**Changes in revision 1.24 (30 September).** No MediaTek response twelve days after CVTE's issue. Section 8 adds an ICON-side recovery attempt that does not depend on MediaTek: R-A eMMC test-point entry to BROM download, R-B in-system eMMC rewrite of boot0 with a programmer, R-C UART capture from the bricked unit. Ask 41 to CVTE hardware for the eMMC pad locations. Test plan v1.9 adds S3c. The 2 October decision by the Section 3.5 rule is No-Go unless one of R-A or R-B succeeds on the first article before the gate, or iFIT signs the boot0-scrap residual as accepted (Section 3.4 consequence, r1.22).
 
 **Changes in revision 1.23 (24 September).** Source O (CVTE, 19 Sep) ingested: second-blow test on a fused unit shows additive blows are accepted and only a bit-clearing config is refused. G12 exposure confirmed; the lock-bit decision moves from precaution to requirement before MP. The test unit is to be quarantined from the cohort. Ask 35 answered. No MediaTek reply to the 18 Sep issue as of 24 Sep.
 
