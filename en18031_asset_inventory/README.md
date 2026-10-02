@@ -11,7 +11,7 @@ Claude chat on 2026-10-02 because Google Sheets uploads from chat were failing
 |---|---|
 | Action report (handoff context, 2026-09-25) | ✅ `ACTION_REPORT_2026-09-25.md` |
 | Live Google Sheet (chosen source of truth, 2026-10-02) | https://docs.google.com/spreadsheets/d/1I8rTEYzTkyLlGrpW8jjURBv6sgxAJCbayEPl-sFG-2Q/edit |
-| Snapshot of live Sheet as xlsx | ✅ `iFIT_Xenon_Cesium_EN18031_Asset_Inventory.xlsx` (exported 2026-10-02; Sheet last modified 2026-09-25) |
+| Snapshot of live Sheet as xlsx | ✅ `iFIT_Xenon_Cesium_EN18031_Asset_Inventory.xlsx` (re-exported 2026-10-02 after merge; matches live Sheet cell for cell) |
 | Snapshot as diffable CSV, one file per tab | ✅ `csv/` |
 | Workbook v2 from chat (MQTT retraction + NIST 8259A updates) | ❌ Abandoned in favour of the live Sheet. Its corrections are **not** in the live Sheet and must be re-applied. |
 | CSA Group template (`EN18031_Treadmill_Asset_Inventory_Sample.xlsx`) | ⬜ Not yet imported |
@@ -21,7 +21,12 @@ Claude chat on 2026-10-02 because Google Sheets uploads from chat were failing
 
 ## State of the live Sheet vs the action report
 
-The live Sheet predates the v2 corrections in `ACTION_REPORT_2026-09-25.md` §3:
+**Resolved 2026-10-02.** The v2 corrections were merged into the live Sheet by hand (paste list), verified cell for cell
+against `merged_for_import_2026-10-02.xlsx` with zero mismatches, and the snapshot here re-exported from the live Sheet.
+Five of six comment threads kept their anchors (B8, B33, G33, K33, E34); the B10 thread (Alex Panetta, AVB row) was
+detached during an aborted File → Import and needs a fresh comment if it should be on the cell again.
+
+Historical note, before the merge the live Sheet predated the v2 corrections in `ACTION_REPORT_2026-09-25.md` §3:
 
 - MQTT is still asserted as current architecture in assets 4, 7, 10, 18, 24, 28, 33, 35, 41. Only asset 33 carries a
   manual note that MQTT is not implemented. The §3a retraction still needs applying.
@@ -41,7 +46,7 @@ Residual MQTT mentions in assets 4, 10, 18, 28, 33, 35, 41 scrubbed in pass 2 (s
 
 ## Next steps
 
-1. Import `merged_for_import_2026-10-02.xlsx` over the live Sheet (manual, see above), then refresh the snapshot here.
+1. ~~Import merged workbook over the live Sheet~~ Done 2026-10-02 via paste list; File → Import orphans comments, do not use it.
 2. Work the six open comment threads.
 3. Incorporate the Console/SKU priority list (action report §6.1) once re-uploaded.
 4. Start the weekly comment-review cycle (action report §6.3).

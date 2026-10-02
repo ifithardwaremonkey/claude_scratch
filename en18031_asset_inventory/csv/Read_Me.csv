@@ -26,7 +26,21 @@ Notes
 • Rows flagged 'SPECIAL CATEGORY' contain GDPR Art. 9 data — expect stricter treatment in EN 18031-2 assessments.
 ""
 Legend
-Yellow cells = to be completed by the manufacturer. Blue rows = Security assets. Green rows = Network assets. Pink rows = Privacy assets.
+Yellow cells = to be completed by the manufacturer. Blue rows = Security assets. Green rows = Network assets. Pink rows = Privacy assets. Grey rows = confirmed NOT APPLICABLE.
 ""
 "Prepared from: EN 18031-1:2024 (Clause 3, Annex A.2.6) and EN 18031-2:2024 (Clause 3, Annex A.2.6). Example asset rows are illustrative suggestions by CSA Group."
 The 'Where to Look' sheet gives the interface-by-interface / lifecycle review sequence for discovering assets; record findings in the yellow column.
+""
+CHANGELOG — Revision 2 (9/25/26)
+"1. CORRECTION: 'MQTT' credentials/transport retracted from rows 4, 24, 33, 53 on the Asset Inventory sheet. That architecture (Event Bus over MQTT, MQTT User Biometrics, Apple Watch MQTT Transport Confluence pages) is a proposed FUTURE ToG (Tailor on Glass) tablet project, not current Valinor implementation — flagged by Dave Christensen after live review with the CSA consultant. Actual current telemetry transport mechanism is now an open GAP."
+"2. NEW SOURCE: iFIT's official NIST IR 8259A response to CSA Group (Mindi Strong to Albert Bennett, 9/25/26, Project 80308127, Eway Xenon1 Tablet) — the first ENGINEERING-CONFIRMED, submitted-to-certifier source in this register. Rows updated: 5 (credential storage path/mechanism confirmed), 8 (kiosk lockdown corroboration), 9 (partial — USB debugging lockdown, but hardcoded-credential question still open), 10 (AVB/verified boot CONFIRMED for Xenon1/Eway specifically), 14 (anti-rollback CONFIRMED for Xenon1/Eway, software/timestamp-layer), 15 (auth lockout thresholds RESOLVED), 17 (OTA + APK signature verification RESOLVED for Xenon1/Eway), 20 (backup/extraction controls added), 41 (partially addressed — HTTP log redaction confirmed, CS-log PII exposure still open)."
+"3. IMPORTANT SCOPE NUANCE: the NIST 8259A response is specific to the Eway-built Xenon1 tablet. Several 'RESOLVED' items above apply to that variant only — Xenon-V, Xenon1.2, and Cesium are NOT automatically covered by the same confirmation and remain open per their original GAP status unless separately confirmed."
+"4. Zero rows in this register carry engineering sign-off beyond what's captured above — everything else remains sourced from Confluence/Jira documentation review, not validated by iFIT engineering or accepted by CSA Group."
+""
+Pending: console/SKU priority test list (attached 9/25/26) not yet cross-referenced into this register.
+""
+CHANGELOG — Revision 3 (10/2/26)
+"1. Merged Revision 2 corrections (items 1–4 above) into this live sheet. Only the corrected cells were ported: Asset Inventory rows 5, 8, 9, 10, 14, 15, 17, 20, 25, 34, 56 (cols B/K/L/M as applicable). All reviewer edits made directly in this sheet since 9/18/26 (asset 1 annotations, candidate assets rows 60–66, scoping notes rows 74–77, Interfaces rows 14–18, ArcX note) were preserved unchanged."
+2. Source of truth is now this Google Sheet; a git-tracked snapshot (xlsx + per-tab CSV) is kept in the claude_scratch repo under en18031_asset_inventory/.
+"3. Residual MQTT mentions scrubbed from Asset Inventory rows 5, 11, 19, 29, 34, 36, 42 (assets 4, 10, 18, 28, 33, 35, 41). Current product does not use MQTT. Where a transport/endpoint cell is concerned, a one-line 'Future note' records that a proposed ToG project may add an MQTT-like service, explicitly out of current scope, so the claim is not re-introduced by mistake."
+4. Same MQTT scrub applied to Interfaces row 11 (Cloud backend connection) and Where to Look step 7 (Cloud link).
