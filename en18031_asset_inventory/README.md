@@ -42,11 +42,13 @@ Historical note, before the merge the live Sheet predated the v2 corrections in 
 `MERGE_LOG_2026-10-02.md`. To apply: open the live Sheet → File → Import → Upload → "Replace spreadsheet". This keeps the
 file ID and all comment threads. After import, re-export the Sheet here and refresh `csv/` so the snapshot matches.
 
-Residual MQTT mentions in assets 4, 10, 18, 28, 33, 35, 41 scrubbed in pass 2 (see MERGE_LOG). Future ToG MQTT-like service noted as out of scope.
+**Revision 4 (2026-10-02): MQTT reinstated.** The retraction was wrong; see `MQTT_STATUS_2026-10-02.md`. `merged_v4_2026-10-02.xlsx` = live Sheet (incl. Allen's 10/2 reviewer notes in col N) + concise MQTT rewrite in 28 cells. Apply via `PASTE_LIST_v4_2026-10-02.md`.
 
 ## Next steps
 
 1. ~~Import merged workbook over the live Sheet~~ Done 2026-10-02 via paste list; File → Import orphans comments, do not use it.
+1a. Apply `PASTE_LIST_v4_2026-10-02.md` (MQTT reinstated, 28 cells), then re-verify.
+1b. F-001: mark asset 57 out of scope and soften its four dependents (Allen's col-N notes on rows 9/10 point the same way).
 2. Work the six open comment threads.
 3. Incorporate the Console/SKU priority list (action report §6.1) once re-uploaded.
 4. Start the weekly comment-review cycle (action report §6.3).
