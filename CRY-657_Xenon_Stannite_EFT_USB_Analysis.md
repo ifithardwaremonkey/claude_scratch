@@ -34,6 +34,63 @@ The retry loop proposed in CRY-784 is still worth doing, but it recovers nothing
 
 So: yes to the retry loop, but make its acceptance criteria require an actual device reset mechanism, and open a parallel brainboard firmware ticket for the USB watchdog and the comms-loss belt stop. The firmware ticket closes the hazard; the glassos ticket closes the frozen screen.
 
+## How the three tickets relate
+
+| Ticket | What it is | State (2026-10-02) | What actually changed |
+|---|---|---|---|
+| CLI-396 / VAL-8863 | The user-facing symptom: belt kept running after cooldown and the console froze, after an 18-minute USB flap on a Stannite (functional test, no EFT). Matthew's investigation in the ticket is the source of the "active reconnect" recommendation. | Done (Retail-2026-05 / Glass-2026-06) | **No code fix is recorded against it.** It was closed on 2026-09-30 by Sean Brady Campbell with "no additional instances seen on Glass-2026-06 with its expanded Stannite testing, passing for now". The only code change in the chain is the CRY-657 debounce (PR #484), which the ticket itself says "does not help once the link is already gone". |
+| CRY-657 | The EFT test failure and the debounce change (transport layer, 1.5 s connect-on-attach). | Blocked on OS/HW input | Debounce shipped in glassos 8.47.4.1896 and behaves correctly (§2d). Recovery delay shown to be an OS/brainboard loop, not an app issue. |
+| CRY-784 | Matthew's proposal for a glassos self-initiated reconnect/reclaim loop plus a FitPro2 "connection lost" UX, keyed off the dead-link state. The software half of CLI-396's recommendation #1. | Backlog, unassigned, no comments | Not a duplicate of CLI-396: CLI-396 was the bug, CRY-784 is the capability that was supposed to fix it and was never built. It is the right place to answer with the two preferred methods below. |
+
+Two corrections to the premises in CLI-396 and CRY-784 that matter for how CRY-784 is scoped:
+
+- **"Re-enumerates as invalid productId 6 / UNKNOWN" did not happen.** PID 6 is the Stannite's real product ID and every enumeration carried a valid descriptor (§2b). The "not a valid product, was UNKNOWN" and "invalid productId 6" lines come from a second device-type handler in glassos that runs in parallel and always rejects the device; the Stannite handler connects a few ms later. The flap in CLI-396 was a link problem, not a descriptor problem.
+- **In CLI-396 there was nothing to reclaim.** The last enumeration (device 066) detached at 11:29:15 and no attach of any kind followed for 31 minutes; Eru saw the same silence. The brainboard was off the bus, so a glassos loop polling `getDeviceList()` or re-opening a handle would have found nothing. The recovery at 12:00:09 came back as device **002**, a number the kernel only hands out after the bus is re-initialised (or after a 126-number wrap), which points at a bus or port-level reset coinciding with the "app restart", not at the restart itself. That is the same conclusion as this report: the levers that recover the link are a brainboard-side re-attach or a host-side port reset, and glassos should trigger those rather than retry on its own.
+
+## Draft responses (for review, not posted)
+
+### A. To the iFIT brainboard firmware team (Stannite): USB watchdog and comms-loss stop
+
+> Context: CRY-657 (Xenon + Stannite EFT) and CLI-396 (Stannite USB flap in functional test). In both, the Stannite USB link goes into a state where the host enumerates it successfully about once per second and loses it again within tens of milliseconds, for minutes at a time (2,108 cycles in the 05-11 run), and the link only recovers on a deeper event that recurs every ~126 cycles. In CLI-396 the board was off the bus entirely for 31 minutes. We understand the Stannite already has a watchdog; we need to know what it covers so we can decide whether the fix is in firmware, in the tablet OS, or both.
+>
+> Questions:
+> 1. What does the existing watchdog monitor and reset: the MCU as a whole, the USB peripheral, or application-level activity? What is its timeout, and does it release the D+ pull-up during its reset?
+> 2. Does FW 4.04 have any path that re-initialises or re-attaches USB about once per second (USB error handler, brown-out handler, audio codec fault handler that resets the USB stack)? And anything with a period near 2 minutes (126 cycles × 1.0025 s)? Those two numbers are the fingerprint in both EFT runs.
+> 3. Does the firmware act on VBUS loss (re-initialise the USB peripheral when VBUS drops)? The board is self-powered (`bmAttributes=0xC0`), so this decides whether a console-side VBUS switch would help.
+>
+> Requests:
+> 1. A USB-link watchdog: if the device is enumerated but has seen no valid host traffic (SET_CONFIGURATION followed by FitPro2 or audio transfers) for N seconds, do a full USB peripheral re-initialisation: release D+ long enough to be seen as a clean disconnect (hundreds of ms), reset the USB controller and clocks, then re-attach. A pull-up toggle alone is not enough; the current behaviour already looks like a fast re-attach that does not clear the fault.
+> 2. A comms-loss safety timeout: if the console heartbeat stops for X seconds during a workout, ramp the belt to zero. CLI-396 ran the belt for 31 minutes with no software path to stop it. The stop path must not depend on the USB link surviving. The board already keeps its own buttons working through the link loss, so this is a firmware policy change, not a hardware one.
+> 3. A UART or debug trace of USB state (attach, configured, reset, watchdog fire) that we can capture during one EFT application and line up against the tablet's `UsbHostManager` log.
+
+### B. To CVTE (Xenon now; Cesium design): kernel and OS asks
+
+> Context: CRY-657. During and after IEC 61000-4-4 burst on the Stannite USB cable, the Xenon kernel enumerates the Stannite on root port 1 of the host-only controller (`usb 1-1`, full-speed, `xhci-mtk-p1`) once every 1.0025 s and loses it again within tens of milliseconds, for 8 to 9 minutes after the burst stops, until one enumeration holds. The only kernel record we have of a recovery is `usb usb1-port1: disabled by hub (EMI?), re-enabling...` followed by a clean re-enumeration. Android (glassos) cannot act during this loop because no device lives long enough to be opened. We need the following.
+>
+> 1. **Kernel log coverage.** The dmesg ring buffer on VKX1_20241014 holds about 10 minutes because of the per-CPU `[wdk-c]`/`[wdk-k]` watchdog lines every ~15 s, so no bugreport has ever captured the burst period. Please either rate-limit those lines or raise `log_buf_len` so a bugreport covers at least an hour, and enable pstore/ramoops so `LAST KMSG` exists.
+> 2. **Port signature.** From your side, capture `dmesg` during one minute of the loop and tell us whether each cycle begins with a port error (`disabled by hub (EMI?)`, port reset, `-71`/`-32`) or with a plain `USB disconnect` followed by a new enumeration. The first means the Genio 700 port/PHY is tripping; the second means the device is dropping off. Please also check whether anything in `xhci-mtk` (port-status-change handling, the periodic-endpoint bandwidth scheduler for this device's three 1 ms endpoints, the `drop_ep_quirk` path) can re-trigger once per device-number wrap.
+> 3. **PHY instance and the 2024 tuning.** Confirm which controller and `mtk-tphy` instance sits behind the Stannite USB-C receptacle (`readlink /sys/bus/usb/devices/usb1`) and whether the VKX1MP16_20240403 EFT change (Vterm 780→800 mV) was applied to it or only to the PHY behind the USB-2 JST connector. State which register was changed and whether it affects a full-speed link, since the Stannite is FS and the HS disconnect-envelope threshold does not apply to FS.
+> 4. **A port-level recovery hook.** Kernel 5.15.94 (android13-5.15) predates the upstream `/sys/bus/usb/devices/.../usbN-portM/disable` attribute (added in 6.0). Please either backport it or expose an equivalent vendor node that disables and re-enables root port 1 (and, if feasible, cycles port power), callable by a system-uid process (Eru). Also consider doing it in-kernel: if a port sees N consecutive enumerations that die within 1 s, power-cycle the port once. `UsbManager.resetUsbPort()` does not cover this root port because it is not a Type-C port under the USB HAL.
+> 5. **`dumpsys usb` crash.** `UsbDescriptorParser` throws `IllegalArgumentException` on the Stannite descriptor (and logs `Unknown Audio Class Interface subtype:0xa`), so the USB port-manager state is missing from every Xenon bugreport. Please fix the parser or guard the dump.
+> 6. **Cesium.** The brainboard is on VL122 downstream port 3 (`6-1.3`), not a SoC port, so items 3 and 4 move to the hub: the `6-1-port3/disable` attribute exists on 6.1, but we also need to know whether the VL122 downstream port can latch disabled under burst and whether its upstream link resets, and we would like the same in-kernel port power-cycle policy applied to hub ports. The direct USB2 pair at V34/V35 is the alternative routing we want to A/B against the hub path.
+
+### C. Reply on CRY-784 (glassos active reconnect)
+
+> Agree with the core of this ticket: a purely attach-broadcast-driven reconnect is not enough, and FitPro2 needs a "connection lost" state like FitPro1's Fatality. Three findings from the CRY-657 logs should shape the scope, and the short version is: keep the glassos logic simple, because the recovery itself has to happen below glassos.
+>
+> 1. The "invalid productId 6 / UNKNOWN" premise is wrong. PID 6 is the Stannite's real product ID and all 380 enumerations across both EFT runs carried a valid descriptor. Those log lines come from the parallel UNKNOWN device-type handler, which always rejects vendor 8508; the Stannite handler connects a few ms later. There is no bad-descriptor state to filter for.
+> 2. In CLI-396 there was nothing to reclaim. The board detached at 11:29:15 and no attach of any kind followed for 31 minutes (Eru saw the same silence), so a loop polling `getDeviceList()` or re-opening a handle would have found no device. The recovery at 12:00:09 came back as device number 002, which the kernel only issues after the bus is re-initialised; something reset the port or bus at that moment, and that is what recovered the belt, not the app restart. In CRY-657 the opposite happens: the device re-enumerates every 1.0025 s and dies within tens of ms, and the 1.5 s debounce in 8.47.4.1896 handled it exactly right (252 arms, 248 cancels, 4 connects within 10 ms of the timer) and still waited 8 to 9 minutes because the link never held. Neither case is improved by more retries or a longer timer in glassos.
+> 3. The two mechanisms that do recover the link are being requested elsewhere: a USB watchdog and comms-loss belt stop in Stannite firmware (closes the hazard), and a port disable/enable hook plus in-kernel port power-cycle in the CVTE OS (recovers the link whichever side is looping).
+>
+> Suggested scope for this ticket, kept small:
+> - Detect the dead-link state on a timer, trigger-agnostic as written: no surviving attach for N seconds, or N consecutive device-node create/remove pairs with no attach, or the existing "No longer communicating" teardown.
+> - On detection, escalate in order: (a) if a `UsbDeviceConnection` handle still exists, `USBDEVFS_RESET` on its fd via JNI; (b) ask Eru to toggle the brainboard's port through the OS hook from CVTE; (c) show the FitPro2 "machine connection lost, use the hardware stop button" state. Bound and back off the attempts; stop when a genuine attach broadcast arrives.
+> - Log a single "USB loop detected" event with the cycle count so the condition is visible in Eru reports.
+> - Do not add polling re-enumeration, extended retry counts, or product-ID heuristics; they cannot act while the kernel cannot keep the device enumerated.
+> - Acceptance: verified on a Stannite by forcing the link down and confirming recovery through (a) or (b) without an app restart, plus the UX state when both fail. The belt stop is out of scope here and belongs to the firmware ticket.
+>
+> CLI-396 was closed by observation (no recurrence on Glass-2026-06), not by a code change, so this ticket is the only open software item for the dead-link case and is not a duplicate of it.
+
 ## 0. Coverage and what could not be analysed
 
 | Attachment | Status |
