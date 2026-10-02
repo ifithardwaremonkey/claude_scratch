@@ -31,9 +31,18 @@ The live Sheet predates the v2 corrections in `ACTION_REPORT_2026-09-25.md` §3:
 - Six reviewer comment threads are open on the Sheet (assets 7, 9, 32, 33). They live on the Sheet; any content update
   must keep the same file ID (in-place edit or File → Import → Replace) so they are not orphaned.
 
+## Merge of v2 corrections (2026-10-02)
+
+`merged_for_import_2026-10-02.xlsx` = live snapshot + section A of `V2_vs_LIVE_DIFF_2026-10-02.md`. Cell-by-cell record in
+`MERGE_LOG_2026-10-02.md`. To apply: open the live Sheet → File → Import → Upload → "Replace spreadsheet". This keeps the
+file ID and all comment threads. After import, re-export the Sheet here and refresh `csv/` so the snapshot matches.
+
+Known residue not covered by v2: assets 10, 18, 28, 35, 41 still mention MQTT in passing (cols B/K/L/M). Not yet edited.
+
 ## Next steps
 
-1. Re-apply the §3a MQTT retraction and §3b NIST 8259A updates to the Sheet content, editing the xlsx/CSV here first.
+1. Import `merged_for_import_2026-10-02.xlsx` over the live Sheet (manual, see above), then refresh the snapshot here.
+1b. Decide whether to scrub the residual MQTT mentions in assets 10, 18, 28, 35, 41.
 2. Work the six open comment threads.
 3. Incorporate the Console/SKU priority list (action report §6.1) once re-uploaded.
 4. Start the weekly comment-review cycle (action report §6.3).
