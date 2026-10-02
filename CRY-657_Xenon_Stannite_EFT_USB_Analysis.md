@@ -2,6 +2,38 @@
 
 Analysis date: 2026-10-01. Analyst input: the pre-debounce bugreport bundle `CVTE-CVTEMediatekXenon1_06-Wed-05_10.44.zip` (Allen, Jira attachment 242132, recovered from Drive folder `Xenon_EFT_USB_fail-CVTEMediatekXenon1_06-Wed-05_10.44`), plus Jira CRY-657 / BRAIN-402 / BRAIN-814 comment history, the WOLF "USB Disconnect Issue 11/1" Confluence page, and a Cesium bugreport (`bugreport-iFitG520-AP3A.240905.015.A2-2026-09-11-00-07-42`) for the topology comparison.
 
+## Where a proper fix lives, in priority order
+
+The logs put the failure between the tablet's USB host port and the Stannite's USB peripheral, and show that the console application cannot recover it by retrying (§2d). The fix therefore sits with three groups, in this order. Detailed per-team asks and the evidence behind them are in §4.
+
+### 1. Brainboard firmware (iFIT), not the console
+
+Two things the brainboard should do on its own, regardless of what Android does:
+
+- **A USB watchdog with a real reset behind it.** The data shows the Stannite already re-attaches about once per second after a burst and gets dropped again within tens of milliseconds, over 2,000 times in a row, and only recovers on a deeper event that recurs every ~126 cycles (§2d). Whichever side is driving that cycle, the brainboard-side remedy is the same: if the device has been enumerated but has seen no valid host traffic (SET_CONFIGURATION followed by FitPro2 or audio transfers) for N seconds, do a full peripheral re-initialisation, not just a pull-up toggle: release D+ for long enough to be seen as a clean disconnect (hundreds of ms), reset the USB controller and its clocks, and only then re-attach. Most MCU USB stacks support this, and it works whether the EFT hit latched the brainboard's PHY or the host's. The firmware team's first task is to say whether FW 4.04 already has a ~1 s re-attach path and a ~2 min watchdog, because those two numbers are the loop's fingerprint (§4, Stannite items).
+- **A comms-loss safety timeout.** If the console heartbeat stops for X seconds mid-workout, ramp the belt to zero. This is the fix for "software is powerless to stop the belt" (CLI-396: belt still running after the console lost the link). The stop path must never depend on a USB link surviving, and the Stannite already keeps its own controls alive through the link loss (PCA buttons kept working on 05-07), so the hardware is capable of it. This is the version a safety reviewer will want to see: a hazard-level mitigation, not a UX one.
+
+### 2. Kernel and system level on the tablet (CVTE OS, Xenon and Cesium)
+
+The Stannite is self-powered (configuration descriptor `bmAttributes=0xC0`, 100 mA budget), so the console cannot power-cycle it. The only host-side levers that reset device state are a USB bus reset or a port disable/enable:
+
+- **`USBDEVFS_RESET` on the open `UsbDeviceConnection` file descriptor** is callable from glassos through JNI today, no root needed, and is a real bus reset rather than a re-open. It is the right tool for the "device enumerated but silent" case (the 05-06 12:32→12:43 hold, §2c). It cannot help during the 1 Hz loop, because no device lives long enough to be opened (§2d); the loop needs a port-level action.
+- **Port disable/enable from sysfs.** On Cesium (kernel 6.1) the attribute exists: `/sys/bus/usb/devices/usb6/6-1:1.0/6-1-port3/disable` toggles the VL122 downstream port the brainboard sits on. On Xenon (kernel 5.15.94, android13-5.15 GKI) the `disable` attribute was added upstream in 6.0, so CVTE must either confirm a backport (`ls /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/`) or provide an equivalent hook (unbind/bind of the port device, or a vendor sysfs node that forces a port reset). Either way it needs a privileged helper; Eru already runs as uid 1000, so that is natural. On Xenon the port is the SoC root port (§1); on Cesium it is a hub port, and the hub's own upstream reset is a second lever (§6).
+- **A VBUS load switch with GPIO enable on the console side** is cheap insurance for the next board spin. Dropping VBUS makes an MCU USB stack with VBUS sense fully re-initialise, which is the closest thing to a remote reset available on a self-powered device; it only works if the Stannite firmware actually acts on VBUS loss, which the firmware team should confirm.
+- **Xenon PHY tuning (CVTE).** Confirm the 2024 BRAIN-402 EFT change was applied to the PHY instance behind the Stannite USB-C receptacle, and whether the register changed affects a full-speed link (§1). On Cesium the equivalent question goes to VIA for the VL122 (§6).
+
+### 3. glassos (Valinor), scoped as the orchestrator
+
+The retry loop proposed in CRY-784 is still worth doing, but it recovers nothing by itself. The 05-11 log shows the 1.5 s debounce doing exactly what it should (252 arms, 248 cancels, 4 connects within 10 ms of the timer) and still waiting 8 to 9 minutes because the link never held (§2d). Scope it as: detect the dead or looping link (no surviving attach for N seconds, or N consecutive device-node create/remove pairs with no attach), trigger the reset mechanisms above in escalating order (`USBDEVFS_RESET` if a connection exists, then the port toggle through Eru), poll `UsbManager.getDeviceList()` on a backoff timer between attempts, and surface the recovery state and its failure to the user. Position it as the thing that triggers recovery and tells the user when it fails, not as the thing that recovers the link. Acceptance criteria should require an actual device-reset mechanism (ioctl or port toggle), not a longer timer.
+
+### Things to check before committing to the software path
+
+- **Pull `dmesg` from a failing unit while the loop is running.** One minute is enough. Each cycle starting with `usb usb1-port1: disabled by hub (EMI?)`, a port reset or `-71`/`-32` errors points at the console's host controller or PHY; each cycle being a plain `usb 1-1: USB disconnect` followed by a clean `new full-speed USB device` points at the brainboard dropping its pull-up (§2d, item 4). Note that the enumerations themselves succeed in both runs, so a storm of descriptor-read errors is not what to expect; the discriminator is what precedes each disconnect. No existing capture covers a run of cycles; the 05-11 bundle (Jira 242591) may.
+- **Hub or not.** Checked: Xenon has no hub, the Stannite is on a SoC root port (§1). Cesium does, the brainboard is on VL122 downstream port 3 (§6), so on Cesium an EFT hit may latch the hub and only a hub port toggle or hub reset clears it, which the app layer cannot reach without the helper in item 2.
+- **Transient protection and shield grounding on the brainboard and the cable.** A later run passed with a better USB-C cable, and the historic fixes were ferrites, both pointing at common-mode coupling into the pair. CRY-657 is IEC 61000-4-4 burst (EFT) on the cable; the BRAIN audio tickets are IEC 61000-4-2 air discharge (ESD), a different coupling mechanism. If the loop reproduces at the required EFT level on the cable, the root cause is a hardware compliance item and the software work is a field mitigation, not the fix.
+
+So: yes to the retry loop, but make its acceptance criteria require an actual device reset mechanism, and open a parallel brainboard firmware ticket for the USB watchdog and the comms-loss belt stop. The firmware ticket closes the hazard; the glassos ticket closes the frozen screen.
+
 ## 0. Coverage and what could not be analysed
 
 | Attachment | Status |
