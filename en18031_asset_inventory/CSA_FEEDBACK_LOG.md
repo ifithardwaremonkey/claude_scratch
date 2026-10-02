@@ -17,3 +17,11 @@ CSA Group frustrated at pace; progress acknowledged. Allen polishing the Sheet d
   - Where to Look step 1 col E — keep, add legacy qualifier.
 - **Gap count impact:** removes one Critical (7 → 6).
 - **Status:** awaiting Allen's edits in the Sheet; reconcile after.
+
+### F-002 — Provenance of the MQTT retraction wording (assets 4, 24, 33 col M)
+
+- **Question:** what is the source for "Per Dave Christensen (Asset Owner)"?
+- **Finding:** sentence authored by Claude in the v2 chat pass. "Dave Christensen" traces to action report §3a (verbal correction during 9/25/26 review with the CSA consultant). "(Asset Owner)" has no source; drop it. Original MQTT claim came from Confluence pages describing a proposed ToG project.
+- **Proposed rewording:** state the Confluence basis for the error, attribute the correction to the 9/25/26 review, and mark written engineering confirmation of current transport as pending.
+- **Stronger fix:** obtain a dated written statement (Slack/email) from the Valinor transport owner that MQTT is not in current Xenon/Cesium builds, then cite it.
+- **Status:** pending Allen's decision on who edits.
