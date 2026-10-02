@@ -54,11 +54,13 @@ Two corrections to the premises in CLI-396 and CRY-784 that matter for how CRY-7
 > Context: CRY-657 (Xenon + Stannite EFT) and CLI-396 (Stannite USB flap in functional test). In both, the Stannite USB link goes into a state where the host enumerates it successfully about once per second and loses it again within tens of milliseconds, for minutes at a time (2,108 cycles in the 05-11 run), and the link only recovers on a deeper event that recurs every ~126 cycles. In CLI-396 the board was off the bus entirely for 31 minutes. We understand the Stannite already has a watchdog; we need to know what it covers so we can decide whether the fix is in firmware, in the tablet OS, or both.
 >
 > Questions:
+>
 > 1. What does the existing watchdog monitor and reset: the MCU as a whole, the USB peripheral, or application-level activity? What is its timeout, and does it release the D+ pull-up during its reset?
 > 2. Does FW 4.04 have any path that re-initialises or re-attaches USB about once per second (USB error handler, brown-out handler, audio codec fault handler that resets the USB stack)? And anything with a period near 2 minutes (126 cycles × 1.0025 s)? Those two numbers are the fingerprint in both EFT runs.
 > 3. Does the firmware act on VBUS loss (re-initialise the USB peripheral when VBUS drops)? The board is self-powered (`bmAttributes=0xC0`), so this decides whether a console-side VBUS switch would help.
 >
 > Requests:
+>
 > 1. A USB-link watchdog: if the device is enumerated but has seen no valid host traffic (SET_CONFIGURATION followed by FitPro2 or audio transfers) for N seconds, do a full USB peripheral re-initialisation: release D+ long enough to be seen as a clean disconnect (hundreds of ms), reset the USB controller and clocks, then re-attach. A pull-up toggle alone is not enough; the current behaviour already looks like a fast re-attach that does not clear the fault.
 > 2. A comms-loss safety timeout: if the console heartbeat stops for X seconds during a workout, ramp the belt to zero. CLI-396 ran the belt for 31 minutes with no software path to stop it. The stop path must not depend on the USB link surviving. The board already keeps its own buttons working through the link loss, so this is a firmware policy change, not a hardware one.
 > 3. A UART or debug trace of USB state (attach, configured, reset, watchdog fire) that we can capture during one EFT application and line up against the tablet's `UsbHostManager` log.
@@ -83,6 +85,7 @@ Two corrections to the premises in CLI-396 and CRY-784 that matter for how CRY-7
 > 3. The two mechanisms that do recover the link are being requested elsewhere: a USB watchdog and comms-loss belt stop in Stannite firmware (closes the hazard), and a port disable/enable hook plus in-kernel port power-cycle in the CVTE OS (recovers the link whichever side is looping).
 >
 > Suggested scope for this ticket, kept small:
+>
 > - Detect the dead-link state on a timer, trigger-agnostic as written: no surviving attach for N seconds, or N consecutive device-node create/remove pairs with no attach, or the existing "No longer communicating" teardown.
 > - On detection, escalate in order: (a) if a `UsbDeviceConnection` handle still exists, `USBDEVFS_RESET` on its fd via JNI; (b) ask Eru to toggle the brainboard's port through the OS hook from CVTE; (c) show the FitPro2 "machine connection lost, use the hardware stop button" state. Bound and back off the attempts; stop when a genuine attach broadcast arrives.
 > - Log a single "USB loop detected" event with the cycle count so the condition is visible in Eru reports.
