@@ -25,3 +25,11 @@ CSA Group frustrated at pace; progress acknowledged. Allen polishing the Sheet d
 - **Proposed rewording:** state the Confluence basis for the error, attribute the correction to the 9/25/26 review, and mark written engineering confirmation of current transport as pending.
 - **Stronger fix:** obtain a dated written statement (Slack/email) from the Valinor transport owner that MQTT is not in current Xenon/Cesium builds, then cite it.
 - **Status:** pending Allen's decision on who edits.
+
+### F-003 — MQTT retraction was WRONG; MQTT is shipping on the console
+
+- **Trigger:** Allen found Retail-2026-04 release notes listing ELD-2970 "Integrate MQTT client with embedded console" as shipped (Tier 1 & 2, external distribution, June 2026).
+- **Verified:** ELD-2970 Done/QA-passed 6/23/26; epic ELD-2934 Apple Watch MQTT with production bug fixes through July; Confluence "Apple Watch — MQTT Transport" (Aug 2026) documents current state. Full write-up with citations: `MQTT_STATUS_2026-10-02.md`.
+- **Impact:** the §3a retraction, v2 rows, and today's pass-2/pass-3 scrub (assets 4, 10, 18, 24, 28, 33, 35, 41; Interfaces 11; Where to Look 7) must be reversed and rewritten against the shipped implementation. F-002 wording question is superseded.
+- **New gaps:** console BridgeConfig adapter set (remote WorkoutCommand path), credential storage on console, authorizer token validation, Xenon+Cesium coverage.
+- **Status:** awaiting Allen's go-ahead; Allen currently editing the Sheet.
