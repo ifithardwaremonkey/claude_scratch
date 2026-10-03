@@ -6,8 +6,8 @@ RED='#e34948'
 
 rows = [
  ('Stannite\n(USB audio + FitPro2)',
-  dict(pw='PD source → tablet sink', data='USB-C → ?', path='port unknown; no Stannite-on-Cesium log yet', state='unk'),
-  dict(pw='PD source → tablet sink', data='USB-C → xhci1 root port 1\n(usb 1-1)', path='direct, no hub, FS; PD ctrl outside kernel', state='ok')),
+  dict(pw='no PD on Stannite (BOM)\ntablet power: JST?', data='USB-C → ?', path='port unknown; no Stannite-on-Cesium log yet', state='unk'),
+  dict(pw='no PD on Stannite (BOM)\ntablet power: JST?', data='USB-C → xhci1 root port 1\n(usb 1-1)', path='direct, no hub, FS; tablet PD/CC logic outside kernel', state='ok')),
  ('Quartz\n(FitPro2 only,\nX30 audio over SPI)',
   dict(pw='JST power', data='JST USB → VL122 hub\nport 3 (6-1.3)', path='on-board hub owns disconnect detect', state='ok'),
   dict(pw='JST power', data='JST USB → "USB-2 JST" port', path='PHY Vterm tuned 2024 (BRAIN-402)', state='ok')),
@@ -19,7 +19,7 @@ rows = [
   dict(pw='PD source → tablet sink', data='USB-C → xhci1 root port 1\n(assumed)', path='fp2_utils "6 s detach" seen on Mica (Jul)', state='unk')),
 ]
 cols = ['Cesium\nMT8371 / Genio 520, Android 15, kernel 6.1, on-board VL122 hub',
-        'Xenon\nMT8188 / Genio 700, Android 13, kernel 5.15, no hub on the USB-C path']
+        'Xenon\nMT8390 / Genio 700, Android 13, kernel 5.15, no hub on the USB-C path']
 
 fig, ax = plt.subplots(figsize=(14, 9.6), facecolor=SURF); ax.set_facecolor(SURF)
 ax.set_xlim(0, 14); ax.set_ylim(0, 9.6); ax.axis('off')
@@ -46,7 +46,7 @@ for ri, (name, ces, xen) in enumerate(rows):
         ax.text(x+cw-0.85, y+1.225, 'tablet', ha='center', va='center', fontsize=8, color=INK)
         # power arrow (above) and data arrow (below)
         xa, xb = x+1.3, x+cw-1.45
-        if 'PD' in cell['pw'] and 'no PD' not in cell['pw']:
+        if cell['pw'].startswith('PD source'):
             ax.add_patch(FancyArrowPatch((xa, y+1.4), (xb, y+1.4), arrowstyle='-|>', mutation_scale=10, color=ORANGE, lw=1.6))
         else:
             ax.add_patch(FancyArrowPatch((xa, y+1.4), (xb, y+1.4), arrowstyle='-', color=ORANGE, lw=1.6, ls=(0,(2,2))))
