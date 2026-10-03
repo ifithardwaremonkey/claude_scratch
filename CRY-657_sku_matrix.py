@@ -26,10 +26,10 @@ ax.set_xlim(0, 14); ax.set_ylim(0, 9.6); ax.axis('off')
 fig.text(0.04, 0.955, 'Tablet × brainboard combinations, and what each one means for USB recovery', fontsize=14, weight='bold', color=INK)
 fig.text(0.04, 0.925, 'Orange = power direction. Blue = USB data path and where it lands in the tablet. Grey dashed = not confirmed by any log or schematic read in this analysis.', fontsize=9, color=INK2)
 
-x0 = 3.0; cw = 5.35; rh = 1.95; ytop = 8.35
+x0 = 3.0; cw = 5.35; rh = 1.95; ytop = 8.15
 for ci, c in enumerate(cols):
-    ax.text(x0 + ci*cw + cw/2, ytop + 0.12, c.split('\n')[0], ha='center', va='bottom', fontsize=11, weight='bold', color=INK)
-    ax.text(x0 + ci*cw + cw/2, ytop + 0.10, '\n'+c.split('\n')[1], ha='center', va='top', fontsize=8, color=INK2)
+    ax.text(x0 + ci*cw + cw/2, ytop + 0.42, c.split('\n')[0], ha='center', va='bottom', fontsize=11, weight='bold', color=INK)
+    ax.text(x0 + ci*cw + cw/2, ytop + 0.40, '\n'+c.split('\n')[1], ha='center', va='top', fontsize=8, color=INK2)
 for ri, (name, ces, xen) in enumerate(rows):
     y = ytop - ri*rh - rh
     ax.text(0.25, y + rh/2, name, ha='left', va='center', fontsize=9, weight='bold', color=INK)
