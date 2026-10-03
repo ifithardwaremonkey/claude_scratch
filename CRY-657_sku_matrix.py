@@ -5,16 +5,16 @@ BLUE, ORANGE, AQUA, INK, INK2, SURF, GRID = '#2a78d6', '#eb6834', '#1baf7a', '#0
 RED='#e34948'
 
 rows = [
- ('Stannite\n(USB audio + FitPro2)',
+ ('Stannite, STM32H562\n(USB audio + FitPro2)',
   dict(pw='no PD on Stannite (BOM)\ntablet: 12 V JST CN1', data='USB-C JU1 → VL122 hub port 4\n(6-1.4)', path='sch 702B-0303: D+/D- via choke LU2, no mux; HUSB238 PD sink on CC', state='ok'),
   dict(pw='no PD on Stannite (BOM)\ntablet: 12 V JST 4-pin', data='USB-C → xhci1 root port 1\n(usb 1-1)', path='direct, no hub, FS; tablet PD/CC logic outside kernel', state='ok')),
- ('Quartz\n(FitPro2 only,\nX30 audio over SPI)',
+ ('Quartz, nRF52\n(FitPro2 only,\nX30 audio over SPI)',
   dict(pw='JST power (CN1 12 V)\n5 V on JST USB switched', data='JST USB CN2 → VL122 hub\nport 3 (6-1.3)', path='sch: 5V_USB2.0_A via TMI6263 switch, GPIO USB_HOST1_CTL', state='ok'),
   dict(pw='JST power', data='JST USB → "USB-2 JST" port', path='PHY Vterm tuned 2024 (BRAIN-402)', state='ok')),
- ('Corona Wolf\n(via external dongle hub)',
+ ('Corona Wolf, nRF52\n(via external dongle hub)',
   dict(pw='hub: JST power, no PD\ntablet: 12 V JST CN1', data='USB-C → dongle hub → JST USB', path='two hubs in series: dongle + VL122 (USB-C is hub port 4)', state='ok'),
   dict(pw='hub: JST power, no PD\ntablet: 12 V JST 4-pin', data='USB-C → dongle hub → JST USB', path='dongle hub on the root port', state='unk')),
- ('Mica\n(Ultra3 on Xenon\n= same tablet)',
+ ('Mica, nRF52\n(Ultra3 on Xenon\n= same tablet)',
   dict(pw='PD source → tablet sink', data='USB-C JU1 → VL122 hub port 4\n(6-1.4)', path='sch: VBUS_TYPEC0 → D2 → DC_12V, diode-OR with JST', state='ok'),
   dict(pw='PD source → tablet sink', data='USB-C → xhci1 root port 1\n(same receptacle as Stannite)', path='USB-C chosen over JST for EMI margin; no Xenon schematic (CVTE IP)', state='unk')),
 ]
