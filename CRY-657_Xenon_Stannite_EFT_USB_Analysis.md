@@ -1,6 +1,13 @@
 # CRY-657: Xenon ↔ Stannite USB link loss under EFT — bugreport analysis
 
-Analysis date: 2026-10-01. Analyst input: the pre-debounce bugreport bundle `CVTE-CVTEMediatekXenon1_06-Wed-05_10.44.zip` (Allen, Jira attachment 242132, recovered from Drive folder `Xenon_EFT_USB_fail-CVTEMediatekXenon1_06-Wed-05_10.44`), plus Jira CRY-657 / BRAIN-402 / BRAIN-814 comment history, the WOLF "USB Disconnect Issue 11/1" Confluence page, and a Cesium bugreport (`bugreport-iFitG520-AP3A.240905.015.A2-2026-09-11-00-07-42`) for the topology comparison.
+Analysis date: 2026-10-01, revised through 2026-10-03. Analyst input: the pre-debounce bugreport bundle `CVTE-CVTEMediatekXenon1_06-Wed-05_10.44.zip` (Allen, Jira attachment 242132, recovered from Drive folder `Xenon_EFT_USB_fail-CVTEMediatekXenon1_06-Wed-05_10.44`), plus Jira CRY-657 / BRAIN-402 / BRAIN-814 comment history, the WOLF "USB Disconnect Issue 11/1" Confluence page, and a Cesium bugreport (`bugreport-iFitG520-AP3A.240905.015.A2-2026-09-11-00-07-42`) for the topology comparison.
+
+## Figures (in the repository next to this file)
+
+- `CRY-657_cycle_modes.png`: every Stannite enumeration in both EFT runs plotted against the delay to the next one, showing the 0.600 s and 1.0025 s modes locked to the generator schedule (§2d item 5).
+- `CRY-657_sku_matrix.png`: tablet × brainboard matrix (Cesium, Xenon × Stannite, Quartz, Corona Wolf, Mica) with power direction, data path and MCU family per cell.
+- `CRY-657_cesium_usb_tree.png`: the Cesium USB tree from sysfs and schematic C.G520.702B rev 0303 (§6).
+- `ref/`: the Cesium schematic PDF and renders of its USB and power pages.
 
 ## Where a proper fix lives, in priority order
 
