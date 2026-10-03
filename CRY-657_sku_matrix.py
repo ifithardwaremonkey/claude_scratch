@@ -18,8 +18,8 @@ rows = [
   dict(pw='PD source → tablet sink', data='USB-C JU1 → VL122 hub port 4\n(6-1.4)', path='sch: VBUS_TYPEC0 → D2 → DC_12V, diode-OR with JST', state='ok'),
   dict(pw='PD source → tablet sink', data='USB-C → xhci1 root port 1\n(same receptacle as Stannite)', path='USB-C chosen over JST for EMI margin; no Xenon schematic (CVTE IP)', state='unk')),
 ]
-cols = ['Cesium\nMT8371 / Genio 520, Android 15, kernel 6.1, on-board VL122 hub on SoC port P3',
-        'Xenon\nMT8390 / Genio 700, Android 13, kernel 5.15, no hub on the USB-C path']
+cols = ['Cesium\nMT8371 / Genio 520, Android 15, kernel 6.1\non-board VL122 hub, upstream on SoC port P3',
+        'Xenon\nMT8390 / Genio 700, Android 13, kernel 5.15\nno hub on the USB-C path']
 
 fig, ax = plt.subplots(figsize=(14, 9.6), facecolor=SURF); ax.set_facecolor(SURF)
 ax.set_xlim(0, 14); ax.set_ylim(0, 9.6); ax.axis('off')
@@ -29,7 +29,7 @@ fig.text(0.04, 0.925, 'Orange = power direction. Blue = USB data path and where 
 x0 = 3.0; cw = 5.35; rh = 1.95; ytop = 8.15
 for ci, c in enumerate(cols):
     ax.text(x0 + ci*cw + cw/2, ytop + 0.42, c.split('\n')[0], ha='center', va='bottom', fontsize=11, weight='bold', color=INK)
-    ax.text(x0 + ci*cw + cw/2, ytop + 0.40, '\n'+c.split('\n')[1], ha='center', va='top', fontsize=8, color=INK2)
+    ax.text(x0 + ci*cw + cw/2, ytop + 0.40, '\n'+'\n'.join(c.split('\n')[1:]), ha='center', va='top', fontsize=8, color=INK2)
 for ri, (name, ces, xen) in enumerate(rows):
     y = ytop - ri*rh - rh
     ax.text(0.25, y + rh/2, name, ha='left', va='center', fontsize=9, weight='bold', color=INK)
@@ -58,5 +58,5 @@ for ri, (name, ces, xen) in enumerate(rows):
             ax.text(x+cw-0.3, y+0.42, '?', ha='right', va='top', fontsize=12, weight='bold', color=INK2)
 ax.plot([x0-0.1, x0-0.1], [0.55, ytop+0.05], color=GRID, lw=0.8)
 ax.plot([x0+cw-0.05, x0+cw-0.05], [0.55, ytop+0.05], color=GRID, lw=0.8)
-fig.text(0.04, 0.035, 'Confirmed: Xenon+Stannite (05-06/05-11 bugreports); all Cesium cells from schematic C.G520.702B rev 0303 (old; production may differ) plus the 09-11 bugreport and sysfs. Xenon cells from Allen\'s 2026-10-03 notes; iFIT has no rights to the Xenon schematic, so they stay dashed.\nNot shown: the separate OTG/ADB dual-role port on each tablet, and USB audio boards (Zylux/Bowie on Athena) that share a bus on some SKUs.', fontsize=8, color=INK2)
+fig.text(0.04, 0.02, 'Confirmed: Xenon+Stannite (05-06/05-11 bugreports); all Cesium cells from schematic C.G520.702B rev 0303 (old; production may differ) plus the 09-11 bugreport and sysfs. \nXenon cells from Allen\'s 2026-10-03 notes; iFIT has no rights to the Xenon schematic, so they stay dashed.\nNot shown: the separate OTG/ADB dual-role port on each tablet, and USB audio boards (Zylux/Bowie on Athena) that share a bus on some SKUs.', fontsize=8, color=INK2)
 out='/home/user/claude_scratch/CRY-657_sku_matrix.png'; fig.savefig(out, dpi=170, facecolor=SURF); print(out)
